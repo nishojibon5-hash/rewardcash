@@ -266,7 +266,10 @@ export default function Index() {
   const clickOffer = (id: number, link: string, earn: number) => {
     localStorage.setItem("pendingOffer", JSON.stringify({ id, t: Date.now(), earn }));
     if (link && link !== "#") {
-      window.location.href = link;
+      const w = window.open(link, "_blank", "noopener,noreferrer");
+      if (!w) {
+        window.location.href = link; // fallback if popup blocked
+      }
     } else {
       // For generic offers, start the countdown locally
       setRemainingMs(60000);
@@ -363,7 +366,7 @@ export default function Index() {
         <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
           <li>যেকোনো অফার বাটনে ক্লিক করুন।</li>
           <li>সাইটে ১ মিনিট কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
-          <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং আয় ব���যালেন্সে যুক্ত হবে।</li>
+          <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং আয় ব্যালেন্সে যুক্ত হবে।</li>
           <li>ব্যালেন্স $100 হলে উইথড্র নিন।</li>
         </ol>
       </section>

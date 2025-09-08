@@ -207,15 +207,8 @@ export default function Index() {
     const total = 120; // between 100-200
     const base = Array.from({ length: total }).map((_, i) => ({ id: i + 1 }));
     const pool = (state.customOfferLinks.length ? state.customOfferLinks : DEFAULT_LINKS).slice();
-    const minSpecial = 20;
-    const specialCount = Math.max(minSpecial, Math.round(total * 0.2));
-    const indices = new Set<number>();
-    while (indices.size < specialCount) {
-      indices.add(Math.floor(rand() * total));
-    }
-    return base.map((o, i) => {
-      const linked = indices.has(i) && pool.length > 0;
-      const link = linked ? pool[Math.floor(rand() * pool.length)] : "#";
+    return base.map((o) => {
+      const link = pool[Math.floor(rand() * pool.length)] || "#"; // all buttons use Monetag links randomly
       const rating = 4 + Math.floor(rand() * 2); // 4-5
       const count = 500 + Math.floor(rand() * 5000);
       const earn = Math.round((0.5 + rand() * 4.5) * 100) / 100; // $0.50-$5.00
@@ -223,7 +216,7 @@ export default function Index() {
       const title = titles[kind](earn);
       const descList = descs[kind];
       const desc = descList[Math.floor(rand() * descList.length)];
-      return { ...o, link, linked, rating, count, earn, kind, title, desc };
+      return { ...o, link, rating, count, earn, kind, title, desc };
     });
   }, [rand, state.customOfferLinks]);
 
@@ -233,14 +226,13 @@ export default function Index() {
       const pending = localStorage.getItem("pendingOffer");
       if (pending) {
         try {
-          const data = JSON.parse(pending) as { id: number; t: number };
-          const unlockAt = data.t + 30000; // 30s
+          const data = JSON.parse(pending) as { id: number; t: number; earn?: number };
+          const unlockAt = data.t + 60000; // 60s
           const now = Date.now();
           const remain = unlockAt - now;
           if (remain <= 0) {
-            const awards = [1, 2, 2, 4, 5];
-            const add = awards[Math.floor(Math.random() * awards.length)];
-            award(add);
+            const add = typeof data.earn === "number" ? data.earn : 0;
+            if (add > 0) award(add);
             localStorage.removeItem("pendingOffer");
             setRemainingMs(0);
             setShowBalloons(true);
@@ -271,13 +263,13 @@ export default function Index() {
     };
   }, [award]);
 
-  const clickOffer = (id: number, link: string) => {
-    localStorage.setItem("pendingOffer", JSON.stringify({ id, t: Date.now() }));
+  const clickOffer = (id: number, link: string, earn: number) => {
+    localStorage.setItem("pendingOffer", JSON.stringify({ id, t: Date.now(), earn }));
     if (link && link !== "#") {
       window.location.href = link;
     } else {
       // For generic offers, start the countdown locally
-      setRemainingMs(30000);
+      setRemainingMs(60000);
     }
   };
 
@@ -320,7 +312,7 @@ export default function Index() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">Earn Up To $7 Fast — US‑Only Hot Offers</h1>
-            <p className="text-slate-700 mt-2 text-sm sm:text-base">Tap an offer, complete it, return after 30s and claim instant cash. No signup. Your balance is tracked by IP.</p>
+            <p className="text-slate-700 mt-2 text-sm sm:text-base">Tap an offer, complete it, return after 60s and claim instant cash. No signup. Your balance is tracked by IP.</p>
           </div>
           <div className="text-right text-xs sm:text-sm text-slate-600">
             <p className="font-semibold">Target: United States</p>
@@ -337,7 +329,7 @@ export default function Index() {
           </div>
           <div className="text-right">
             <span className="text-3xl font-extrabold text-slate-900">{balance}</span>
-            <span className="ml-2 text-sm text-slate-600">points</span>
+            <span className="ml-2 text-sm text-slate-600">USD</span>
           </div>
         </div>
       </section>
@@ -346,7 +338,7 @@ export default function Index() {
       <section className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold">Today’s Hottest Payouts</h2>
-          <p className="text-sm text-slate-600">Tap any button to start — limited‑time, high‑CPM tasks for US audience.</p>
+          <p className="text-sm text-slate-600">Tap any button to start — complete per instructions (visit/app install/survey/register). Stay 60s, then return to claim.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {offers.map((o) => (
@@ -357,7 +349,8 @@ export default function Index() {
               </div>
               <p className="text-xs text-slate-600 mt-1">0 জন সম্পন্ন করেছে</p>
               <p className="mt-2 text-lg font-bold text-blue-700">${o.earn.toFixed(2)}</p>
-              <Button onClick={() => clickOffer(o.id, o.link)} className="mt-2 w-full bg-blue-600 text-white hover:bg-blue-700">
+              <p className="text-[11px] text-slate-500 mt-1">Do the task as instructed (visit/app install/survey/register). Stay 60s on the site, then return to claim.</p>
+              <Button onClick={() => clickOffer(o.id, o.link, o.earn)} className="mt-2 w-full bg-blue-600 text-white hover:bg-blue-700">
                 ${o.earn.toFixed(2)}
               </Button>
             </article>
@@ -369,9 +362,9 @@ export default function Index() {
         <h2 className="text-lg font-bold">কিভাবে কাজ করে?</h2>
         <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
           <li>যেকোনো অফার বাটনে ক্লিক করুন।</li>
-          <li>সাইটে ৩০ সেকেন্ড কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
-          <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং পয়েন্ট যুক্ত ���বে (১/২/২/৪/৫)।</li>
-          <li>পয়েন্ট ব্যালেন্স থেকে USDT তে উইথড্র নিন।</li>
+          <li>সাইটে ১ মিনিট কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
+          <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং আয় ব���যালেন্সে যুক্ত হবে।</li>
+          <li>ব্যালেন্স $100 হলে উইথড্র নিন।</li>
         </ol>
       </section>
     </div>

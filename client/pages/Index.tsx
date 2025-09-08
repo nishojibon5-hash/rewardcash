@@ -234,7 +234,7 @@ export default function Index() {
       if (pending) {
         try {
           const data = JSON.parse(pending) as { id: number; t: number };
-          const unlockAt = data.t + 60000; // 1 minute
+          const unlockAt = data.t + 30000; // 30s
           const now = Date.now();
           const remain = unlockAt - now;
           if (remain <= 0) {
@@ -277,7 +277,7 @@ export default function Index() {
       window.location.href = link;
     } else {
       // For generic offers, start the countdown locally
-      setRemainingMs(60000);
+      setRemainingMs(30000);
     }
   };
 
@@ -316,11 +316,11 @@ export default function Index() {
       <Balloons show={showBalloons} />
       {remainingMs > 0 && <CountdownBanner remainingMs={remainingMs} />}
 
-      <section className="rounded-2xl p-5 sm:p-8 bg-white border border-slate-200 shadow-md">
+      <section className="rounded-2xl p-5 sm:p-8 bg-gradient-to-r from-amber-50 via-slate-50 to-blue-50 ring-1 ring-slate-200 shadow-md">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">Earn Up To $7 Fast — US‑Only Hot Offers</h1>
-            <p className="text-slate-600 mt-1 text-sm sm:text-base">Tap an offer, complete it, return after 60s and claim instant cash. No signup. Your balance is tracked by IP.</p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">Earn Up To $7 Fast — US‑Only Hot Offers</h1>
+            <p className="text-slate-700 mt-2 text-sm sm:text-base">Tap an offer, complete it, return after 30s and claim instant cash. No signup. Your balance is tracked by IP.</p>
           </div>
           <div className="text-right text-xs sm:text-sm text-slate-600">
             <p className="font-semibold">Target: United States</p>
@@ -389,8 +389,8 @@ export default function Index() {
         <h2 className="text-lg font-bold">কিভাবে কাজ করে?</h2>
         <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
           <li>যেকোনো অফার বাটনে ক্লিক করুন।</li>
-          <li>সাইটে ১ মিনিট কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
-          <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং পয়েন্ট যুক্ত হবে (১/২/২/৪/৫)।</li>
+          <li>সাইটে ৩০ সেকেন্ড কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
+          <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং পয়েন্ট যুক্ত হবে (১/২/২/৪/��)।</li>
           <li>পয়েন্ট ব্যালেন্স থেকে USDT তে উইথড্র নিন।</li>
         </ol>
       </section>

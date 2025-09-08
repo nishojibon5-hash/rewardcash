@@ -15,16 +15,16 @@ const queryClient = new QueryClient();
 
 function Layout() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--brand-start))] to-[hsl(var(--brand-end))] text-white">
-      <header className="sticky top-0 z-40 backdrop-blur border-b border-white/10 bg-white/5">
+    <div className="min-h-screen bg-white text-slate-900">
+      <header className="sticky top-0 z-40 backdrop-blur border-b border-slate-200 bg-white/80">
         <div className="container flex items-center justify-between py-3">
           <Link to="/" className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-white/20 grid place-items-center shadow">
+            <div className="size-8 rounded-lg bg-slate-900 grid place-items-center shadow text-white">
               <span className="font-extrabold">★</span>
             </div>
             <span className="font-extrabold tracking-tight text-lg">LureOffers</span>
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
+          <nav className="flex items-center gap-4 text-sm text-slate-700">
             <Link to="/" className="hover:underline">Home</Link>
             <Link to="/admin" className="hover:underline">Admin</Link>
           </nav>
@@ -33,8 +33,8 @@ function Layout() {
       <main className="container py-4">
         <Outlet />
       </main>
-      <footer className="border-t border-white/10 bg-white/5">
-        <div className="container py-6 text-xs text-white/70 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <footer className="border-t border-slate-200 bg-white/70">
+        <div className="container py-6 text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p>© {new Date().getFullYear()} LureOffers · Mobile-first US targeted offers</p>
           <p>No registration required. Rewards are device-based.</p>
         </div>

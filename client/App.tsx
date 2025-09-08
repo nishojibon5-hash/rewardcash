@@ -17,14 +17,14 @@ function Layout() {
   const { state } = useAppStore();
   const usd = (state.balance || 0).toFixed(2);
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-40 backdrop-blur border-b border-slate-200 bg-white/80">
         <div className="container flex items-center justify-between py-3">
           <Link to="/" className="flex items-center gap-2">
             <div className="size-8 rounded-lg bg-slate-900 grid place-items-center shadow text-white">
               <span className="font-extrabold">R</span>
             </div>
-            <span className="font-extrabold tracking-tight text-lg">RewardRush</span>
+            <span className="font-extrabold tracking-tight text-lg">RewardCash</span>
           </Link>
           <nav className="flex items-center gap-3 text-sm text-slate-700">
             <span className="px-3 py-1 rounded-full bg-white border border-slate-200">EN</span>
@@ -38,7 +38,7 @@ function Layout() {
       </main>
       <footer className="border-t border-slate-200 bg-white/70">
         <div className="container py-6 text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© {new Date().getFullYear()} RewardRush · Mobile-first US targeted offers</p>
+          <p>© {new Date().getFullYear()} RewardCash · Mobile-first US targeted offers</p>
           <p>No registration required. Rewards are device-based.</p>
         </div>
       </footer>

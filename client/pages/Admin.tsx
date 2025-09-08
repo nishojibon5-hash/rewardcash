@@ -42,7 +42,7 @@ export default function Admin() {
         value={raw}
         onChange={(e) => setRaw(e.target.value)}
         placeholder="Paste URLs separated by newline, comma or space"
-        className="w-full min-h-48 rounded-lg bg-white/10 text-white placeholder:text-white/60 p-4 outline-none ring-2 ring-white/10 focus:ring-white/30"
+        className="w-full min-h-[12rem] rounded-lg bg-white/10 text-white placeholder:text-white/60 p-4 outline-none ring-2 ring-white/10 focus:ring-white/30"
       />
       <div className="flex gap-3">
         <Button onClick={save} className="bg-white text-black hover:bg-white/90">Save ({parsed.length})</Button>

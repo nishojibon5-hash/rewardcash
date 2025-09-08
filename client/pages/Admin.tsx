@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAppStore } from "@/store/app-store";
 
 function parseLinks(raw: string): string[] {
   return raw
@@ -10,26 +11,22 @@ function parseLinks(raw: string): string[] {
 
 export default function Admin() {
   const [raw, setRaw] = useState("");
+  const { state, setLinks } = useAppStore();
   const [saved, setSaved] = useState<string[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("customOfferLinks");
-    if (stored) {
-      try {
-        setSaved(JSON.parse(stored));
-      } catch {}
-    }
-  }, []);
+    setSaved(state.customOfferLinks);
+  }, [state.customOfferLinks]);
 
   const parsed = useMemo(() => parseLinks(raw), [raw]);
 
   const save = () => {
-    localStorage.setItem("customOfferLinks", JSON.stringify(parsed));
+    setLinks(parsed);
     setSaved(parsed);
   };
 
   const clear = () => {
-    localStorage.removeItem("customOfferLinks");
+    setLinks([]);
     setSaved([]);
     setRaw("");
   };

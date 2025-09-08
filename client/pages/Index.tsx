@@ -268,7 +268,7 @@ export default function Index() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">নান্দনিক মোবাইল অফার হাব</h1>
-            <p className="text-white/80 mt-1 text-sm sm:text-base">US নাগরিকদের জন্য আকর্ষণীয় অফার—কোনো রেজিস্ট্রেশন লাগবে না। ক্লিক করুন, কাজ শেষ করুন, ফ��রে এলে বেলুন + আতশবাজি, আর পয়েন্ট যুক্ত হবে।</p>
+            <p className="text-white/80 mt-1 text-sm sm:text-base">US না���রিকদের জন্য আকর্ষণীয় অফার—কোনো রেজিস্ট্রেশন লাগবে না। ক্লিক করুন, কাজ শেষ করুন, ফিরে এলে বেলুন + আতশবাজি, আর পয়েন্ট যুক্ত হবে।</p>
           </div>
           <div className="text-right text-xs sm:text-sm text-white/80">
             <p className="font-semibold">Target: United States</p>
@@ -323,7 +323,7 @@ export default function Index() {
                 <span className="text-xs px-2 py-1 rounded bg-white/10">#{o.id}</span>
                 <span className="text-xs text-yellow-300">{"★".repeat(o.rating)}</span>
               </div>
-              <p className="mt-2 text-sm line-clamp-2">{o.linked ? "Exclusive Offer" : "General Offer"}</p>
+              <p className="mt-2 text-sm">{o.linked ? "Exclusive Offer" : "General Offer"}</p>
               <p className="text-xs text-white/70 mt-1">{o.count.toLocaleString()} doing this</p>
               <Button onClick={() => clickOffer(o.id, o.link)} className="mt-2 w-full bg-white text-black hover:bg-white/90">
                 {o.linked ? "Open Offer" : "Explore"}

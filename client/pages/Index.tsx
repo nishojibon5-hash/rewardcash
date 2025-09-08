@@ -228,7 +228,7 @@ export default function Index() {
       if (pending) {
         try {
           const data = JSON.parse(pending) as { id: number; t: number; earn?: number };
-          const unlockAt = data.t + 60000; // 60s
+          const unlockAt = data.t + 30000; // 30s
           const now = Date.now();
           const remain = unlockAt - now;
           if (remain <= 0) {
@@ -308,7 +308,7 @@ export default function Index() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">Earn Up To $7 Fast — US‑Only Hot Offers</h1>
-            <p className="text-slate-700 mt-2 text-sm sm:text-base">Tap an offer, complete it, return after 60s and claim instant cash. No signup. Your balance is tracked by IP.</p>
+            <p className="text-slate-700 mt-2 text-sm sm:text-base">Tap an offer, complete it, return after 30s and claim instant cash. No signup. Your balance is tracked by IP.</p>
           </div>
           <div className="text-right text-xs sm:text-sm text-slate-600">
             <p className="font-semibold">Target: United States</p>
@@ -334,7 +334,7 @@ export default function Index() {
       <section className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold">Today’s Hottest Payouts</h2>
-          <p className="text-sm text-slate-600">Tap any button to start — complete per instructions (visit/app install/survey/register). Stay 60s, then return to claim.</p>
+          <p className="text-sm text-slate-600">Tap any button to start — complete per instructions (visit/app install/survey/register). Stay 30s, then return to claim.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {offers.map((o) => (
@@ -360,7 +360,7 @@ export default function Index() {
         <h2 className="text-lg font-bold">কিভাবে কাজ করে?</h2>
         <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
           <li>যেকোনো অফার বাটনে ক্লিক করুন।</li>
-          <li>সাইটে ১ মিনিট কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
+          <li>সাইটে ৩০ সেকেন্ড কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
           <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং আয় ব্যালেন্সে যুক্ত হবে।</li>
           <li>ব্যালেন্স $100 হলে উইথড্র নিন।</li>
         </ol>

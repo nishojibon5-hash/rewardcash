@@ -151,6 +151,22 @@ function Balloons({ show }: { show: boolean }) {
   );
 }
 
+function CountdownBanner({ remainingMs }: { remainingMs: number }) {
+  const secs = Math.max(0, Math.ceil(remainingMs / 1000));
+  const mm = Math.floor(secs / 60)
+    .toString()
+    .padStart(2, "0");
+  const ss = (secs % 60).toString().padStart(2, "0");
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-40">
+      <div className="mx-auto max-w-2xl m-3 rounded-xl border border-slate-200 bg-white shadow-lg p-3 sm:p-4 flex items-center justify-between">
+        <p className="text-sm sm:text-base font-medium text-slate-800">Complete the task and return after the timer. Reward unlocks in</p>
+        <span className="font-extrabold text-slate-900 tabular-nums text-lg sm:text-xl">{mm}:{ss}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Index() {
   const { state, award, addWithdraw } = useAppStore();
   const ip = useIPWithStore();
@@ -160,6 +176,7 @@ export default function Index() {
   const [showBalloons, setShowBalloons] = useState(false);
   const [address, setAddress] = useState("");
   const [amount, setAmount] = useState("");
+  const [remainingMs, setRemainingMs] = useState<number>(0);
 
   // Seed based on date for stable layout each day
   const seed = useMemo(() => {
@@ -211,37 +228,56 @@ export default function Index() {
   }, [rand, state.customOfferLinks]);
 
   useEffect(() => {
-    const handler = () => {
+    let interval: number | undefined;
+    const check = () => {
       const pending = localStorage.getItem("pendingOffer");
       if (pending) {
         try {
           const data = JSON.parse(pending) as { id: number; t: number };
-          const elapsed = Date.now() - data.t;
-          if (elapsed > 3000) {
+          const unlockAt = data.t + 60000; // 1 minute
+          const now = Date.now();
+          const remain = unlockAt - now;
+          if (remain <= 0) {
             const awards = [1, 2, 2, 4, 5];
             const add = awards[Math.floor(Math.random() * awards.length)];
             award(add);
             localStorage.removeItem("pendingOffer");
+            setRemainingMs(0);
             setShowBalloons(true);
             setShowConfetti(true);
             setTimeout(() => setShowBalloons(false), 4000);
+            if (interval) window.clearInterval(interval);
+          } else {
+            setRemainingMs(remain);
+            if (!interval) {
+              interval = window.setInterval(() => setRemainingMs((m) => Math.max(0, m - 1000)), 1000);
+            }
           }
-        } catch {}
+        } catch {
+          setRemainingMs(0);
+        }
+      } else {
+        setRemainingMs(0);
+        if (interval) window.clearInterval(interval);
       }
     };
-    window.addEventListener("focus", handler);
-    document.addEventListener("visibilitychange", handler);
-    handler();
+    window.addEventListener("focus", check);
+    document.addEventListener("visibilitychange", check);
+    check();
     return () => {
-      window.removeEventListener("focus", handler);
-      document.removeEventListener("visibilitychange", handler);
+      window.removeEventListener("focus", check);
+      document.removeEventListener("visibilitychange", check);
+      if (interval) window.clearInterval(interval);
     };
-  }, [setBalance]);
+  }, [award]);
 
   const clickOffer = (id: number, link: string) => {
     localStorage.setItem("pendingOffer", JSON.stringify({ id, t: Date.now() }));
     if (link && link !== "#") {
       window.location.href = link;
+    } else {
+      // For generic offers, start the countdown locally
+      setRemainingMs(60000);
     }
   };
 
@@ -278,14 +314,15 @@ export default function Index() {
     <div className="space-y-6">
       <Confetti show={showConfetti} onDone={() => setShowConfetti(false)} />
       <Balloons show={showBalloons} />
+      {remainingMs > 0 && <CountdownBanner remainingMs={remainingMs} />}
 
-      <section className="rounded-2xl p-5 sm:p-8 bg-white/10 backdrop-blur border border-white/15 shadow-xl">
+      <section className="rounded-2xl p-5 sm:p-8 bg-white border border-slate-200 shadow-md">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">নান্দনিক মোবাইল অফার হাব</h1>
-            <p className="text-white/80 mt-1 text-sm sm:text-base">US নাগরিকদের জন্য আকর্ষণীয় অফার—কোনো রেজিস্ট্রেশন লাগবে না। ক্লিক করুন, কাজ শেষ করুন, ফিরে এলে বেলুন + আতশবাজি, আর পয়েন্ট যুক্ত হবে।</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">লোভনীয় অফার — এখনই আয় শুরু করুন!</h1>
+            <p className="text-slate-600 mt-1 text-sm sm:text-base">সার্ভে, ডেটিং, ক্যাশব্যাকসহ নানা ধরনের অফার। ক্লিক করুন, কাজ সম্পূর্ণ করুন, ১ মিনিট পরে ফিরে এলে বেলুন + আতশবাজি আর রিওয়ার্ড যুক্ত হবে।</p>
           </div>
-          <div className="text-right text-xs sm:text-sm text-white/80">
+          <div className="text-right text-xs sm:text-sm text-slate-600">
             <p className="font-semibold">Target: United States</p>
             <p className="opacity-80">{isUS ? "US timezone detected" : "Non‑US timezone"}</p>
             <p className="opacity-80">IP: {ip || "detecting…"}</p>
@@ -293,66 +330,66 @@ export default function Index() {
         </div>
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="col-span-2 flex items-center gap-3 text-sm">
-            <span className="px-2 py-1 rounded bg-white/20">No Login</span>
-            <span className="px-2 py-1 rounded bg-white/20">Device-based Rewards</span>
-            <span className="px-2 py-1 rounded bg-white/20">Fireworks + Balloons</span>
+          <div className="col-span-2 flex items-center gap-3 text-sm text-slate-700">
+            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">No Login</span>
+            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">Device-based Rewards</span>
+            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">Fireworks + Balloons</span>
           </div>
           <div className="text-right">
-            <span className="text-3xl font-extrabold">{balance}</span>
-            <span className="ml-2 text-sm opacity-80">points</span>
+            <span className="text-3xl font-extrabold text-slate-900">{balance}</span>
+            <span className="ml-2 text-sm text-slate-600">points</span>
           </div>
         </div>
       </section>
 
-      <section className="rounded-2xl p-5 sm:p-6 bg-white/10 backdrop-blur border border-white/15 shadow-xl">
+      <section className="rounded-2xl p-5 sm:p-6 bg-white border border-slate-200 shadow-md">
         <h2 className="text-xl font-bold mb-4">Balance & Withdraw (USDT)</h2>
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
           <div className="sm:col-span-2">
-            <label className="text-xs opacity-80">USDT Address (ERC20/TRC20)</label>
-            <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full mt-1 rounded-lg bg-white/10 p-3 outline-none ring-2 ring-white/10 focus:ring-white/30" placeholder="Your USDT address" />
+            <label className="text-xs text-slate-600">USDT Address (ERC20/TRC20)</label>
+            <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full mt-1 rounded-lg bg-white p-3 outline-none ring-1 ring-slate-300 focus:ring-2 focus:ring-slate-500" placeholder="Your USDT address" />
           </div>
           <div className="sm:col-span-1">
-            <label className="text-xs opacity-80">Amount</label>
-            <input value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full mt-1 rounded-lg bg-white/10 p-3 outline-none ring-2 ring-white/10 focus:ring-white/30" placeholder="e.g. 10" />
+            <label className="text-xs text-slate-600">Amount</label>
+            <input value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full mt-1 rounded-lg bg-white p-3 outline-none ring-1 ring-slate-300 focus:ring-2 focus:ring-slate-500" placeholder="e.g. 10" />
           </div>
           <div className="sm:col-span-1">
-            <label className="text-xs opacity-80">Available</label>
-            <div className="mt-1 p-3 rounded-lg bg-white/5 border border-white/10">{balance}</div>
+            <label className="text-xs text-slate-600">Available</label>
+            <div className="mt-1 p-3 rounded-lg bg-slate-50 border border-slate-200">{balance}</div>
           </div>
           <div className="sm:col-span-1">
-            <Button onClick={withdraw} className="w-full bg-white text-black hover:bg-white/90">Withdraw</Button>
+            <Button onClick={withdraw} className="w-full bg-slate-900 text-white hover:bg-slate-800">Withdraw</Button>
           </div>
         </div>
       </section>
 
-      <section className="rounded-2xl p-4 sm:p-6 bg-white/10 backdrop-blur border border-white/15 shadow-xl">
+      <section className="rounded-2xl p-4 sm:p-6 bg-white border border-slate-200 shadow-md">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold">Trending Offers</h2>
-          <p className="text-sm text-white/80">Showing {offers.length} offers · ~20% with custom links</p>
+          <p className="text-sm text-slate-600">Showing {offers.length} offers · ~20% with custom links</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {offers.map((o) => (
-            <article key={o.id} className="group rounded-xl p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition">
+            <article key={o.id} className="group rounded-xl p-3 bg-white border border-slate-200 hover:shadow-lg transition">
               <div className="flex items-center justify-between">
-                <span className="text-xs px-2 py-1 rounded bg-white/10">#{o.id}</span>
-                <span className="text-xs text-yellow-300">{"★".repeat(o.rating)}</span>
+                <span className="text-xs px-2 py-1 rounded bg-slate-100 border border-slate-200 text-slate-700">#{o.id}</span>
+                <span className="text-xs text-amber-500">{"★".repeat(o.rating)}</span>
               </div>
-              <p className="mt-2 text-sm">{o.linked ? "Exclusive Offer" : "General Offer"}</p>
-              <p className="text-xs text-white/70 mt-1">{o.count.toLocaleString()} doing this</p>
-              <Button onClick={() => clickOffer(o.id, o.link)} className="mt-2 w-full bg-white text-black hover:bg-white/90">
-                {o.linked ? "Open Offer" : "Explore"}
+              <p className="mt-2 text-sm font-semibold text-slate-900">{o.title}</p>
+              <p className="text-xs text-slate-600 mt-1">{o.desc} · {o.count.toLocaleString()} doing this</p>
+              <Button onClick={() => clickOffer(o.id, o.link)} className="mt-2 w-full bg-slate-900 text-white hover:bg-slate-800">
+                Claim ${o.earn.toFixed(2)}
               </Button>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="rounded-2xl p-5 sm:p-6 bg-white/10 backdrop-blur border border-white/15 shadow-xl">
+      <section className="rounded-2xl p-5 sm:p-6 bg-white border border-slate-200 shadow-md">
         <h2 className="text-lg font-bold">কিভাবে কাজ করে?</h2>
-        <ol className="mt-2 text-sm space-y-1 text-white/90 list-decimal pl-5">
+        <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
           <li>যেকোনো অফার বাটনে ক্লিক করুন।</li>
-          <li>কাজ সম্পূর্ণ করে ব্যাক করুন।</li>
+          <li>সাইটে ১ মিনিট কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন��ত)।</li>
           <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং পয়েন্ট যুক্ত হবে (১/২/২/৪/৫)।</li>
           <li>পয়েন্ট ব্যালেন্স থেকে USDT তে উইথড্র নিন।</li>
         </ol>

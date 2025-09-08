@@ -17,6 +17,10 @@ export default function Withdraw() {
       alert("Provide name, valid USDT address and amount");
       return;
     }
+    if (amt < 100) {
+      alert("Minimum withdrawal is $100");
+      return;
+    }
     if (amt > state.balance) {
       alert("Amount exceeds available balance");
       return;

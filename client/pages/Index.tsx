@@ -169,6 +169,24 @@ export default function Index() {
   const rand = useMemo(() => mulberry32(seed), [seed]);
 
   const offers = useMemo(() => {
+    const kinds = ["Survey", "Dating", "Cashback", "Quiz", "Sign‑Up", "Spin & Win"] as const;
+    const titles: Record<string, (earn: number) => string> = {
+      Survey: (e) => `2‑Min Survey • Earn $${e.toFixed(2)}`,
+      Dating: (e) => `Find Matches • Claim $${e.toFixed(2)}`,
+      Cashback: (e) => `Instant Cashback • Get $${e.toFixed(2)}`,
+      Quiz: (e) => `Quick Quiz • Win $${e.toFixed(2)}`,
+      "Sign‑Up": (e) => `Free Sign‑Up • Bonus $${e.toFixed(2)}`,
+      "Spin & Win": (e) => `Spin & Win • Up to $${e.toFixed(2)}`,
+    };
+    const descs: Record<string, string[]> = {
+      Survey: ["Answer a few questions", "No login required", "Fast approval"],
+      Dating: ["Meet locals near you", "18+ only", "Verified profiles"],
+      Cashback: ["Shop & save instantly", "Limited time", "US only"],
+      Quiz: ["5 simple questions", "Test your IQ", "Get rewarded"],
+      "Sign‑Up": ["Join free today", "Email only", "Welcome bonus"],
+      "Spin & Win": ["One spin per day", "Lucky draw", "High chances"]
+    };
+
     const total = 120; // between 100-200
     const base = Array.from({ length: total }).map((_, i) => ({ id: i + 1 }));
     const pool = (state.customOfferLinks.length ? state.customOfferLinks : DEFAULT_LINKS).slice();
@@ -183,9 +201,14 @@ export default function Index() {
       const link = linked ? pool[Math.floor(rand() * pool.length)] : "#";
       const rating = 4 + Math.floor(rand() * 2); // 4-5
       const count = 500 + Math.floor(rand() * 5000);
-      return { ...o, link, linked, rating, count };
+      const earn = Math.round((0.5 + rand() * 4.5) * 100) / 100; // $0.50-$5.00
+      const kind = kinds[Math.floor(rand() * kinds.length)] as (typeof kinds)[number];
+      const title = titles[kind](earn);
+      const descList = descs[kind];
+      const desc = descList[Math.floor(rand() * descList.length)];
+      return { ...o, link, linked, rating, count, earn, kind, title, desc };
     });
-  }, [rand]);
+  }, [rand, state.customOfferLinks]);
 
   useEffect(() => {
     const handler = () => {

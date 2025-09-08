@@ -263,17 +263,9 @@ export default function Index() {
     };
   }, [award]);
 
-  const clickOffer = (id: number, link: string, earn: number) => {
+  const clickOffer = (id: number, _link: string, earn: number) => {
     localStorage.setItem("pendingOffer", JSON.stringify({ id, t: Date.now(), earn }));
-    if (link && link !== "#") {
-      const w = window.open(link, "_blank", "noopener,noreferrer");
-      if (!w) {
-        window.location.href = link; // fallback if popup blocked
-      }
-    } else {
-      // For generic offers, start the countdown locally
-      setRemainingMs(60000);
-    }
+    // Direct navigation handled by anchor default behavior
   };
 
   const withdraw = async () => {
@@ -353,8 +345,10 @@ export default function Index() {
               <p className="text-xs text-slate-600 mt-1">0 জন সম্পন্ন করেছে</p>
               <p className="mt-2 text-lg font-bold text-blue-700">${o.earn.toFixed(2)}</p>
               <p className="text-[11px] text-slate-500 mt-1">Do the task as instructed (visit/app install/survey/register). Stay 60s on the site, then return to claim.</p>
-              <Button onClick={() => clickOffer(o.id, o.link, o.earn)} className="mt-2 w-full bg-blue-600 text-white hover:bg-blue-700">
-                ${o.earn.toFixed(2)}
+              <Button asChild className="mt-2 w-full bg-blue-600 text-white hover:bg-blue-700">
+                <a href={o.link} onClick={() => clickOffer(o.id, o.link, o.earn)}>
+                  ${o.earn.toFixed(2)}
+                </a>
               </Button>
             </article>
           ))}

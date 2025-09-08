@@ -316,7 +316,7 @@ export default function Index() {
       <Balloons show={showBalloons} />
       {remainingMs > 0 && <CountdownBanner remainingMs={remainingMs} />}
 
-      <section className="rounded-2xl p-5 sm:p-8 bg-gradient-to-r from-amber-50 via-slate-50 to-blue-50 ring-1 ring-slate-200 shadow-md">
+      <section className="p-5 sm:p-8 bg-gradient-to-r from-amber-50 via-slate-50 to-blue-50">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">Earn Up To $7 Fast — US‑Only Hot Offers</h1>
@@ -342,35 +342,15 @@ export default function Index() {
         </div>
       </section>
 
-      <section id="withdraw" className="rounded-2xl p-5 sm:p-6 bg-white border border-slate-200 shadow-md">
-        <h2 className="text-xl font-bold mb-4">Balance & Withdraw (USDT)</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
-          <div className="sm:col-span-2">
-            <label className="text-xs text-slate-600">USDT Address (ERC20/TRC20)</label>
-            <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full mt-1 rounded-lg bg-white p-3 outline-none ring-1 ring-slate-300 focus:ring-2 focus:ring-slate-500" placeholder="Your USDT address" />
-          </div>
-          <div className="sm:col-span-1">
-            <label className="text-xs text-slate-600">Amount</label>
-            <input value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full mt-1 rounded-lg bg-white p-3 outline-none ring-1 ring-slate-300 focus:ring-2 focus:ring-slate-500" placeholder="e.g. 10" />
-          </div>
-          <div className="sm:col-span-1">
-            <label className="text-xs text-slate-600">Available</label>
-            <div className="mt-1 p-3 rounded-lg bg-slate-50 border border-slate-200">{balance}</div>
-          </div>
-          <div className="sm:col-span-1">
-            <Button onClick={withdraw} className="w-full bg-slate-900 text-white hover:bg-slate-800">Withdraw</Button>
-          </div>
-        </div>
-      </section>
 
-      <section className="rounded-2xl p-4 sm:p-6 bg-white border border-slate-200 shadow-md">
+      <section className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold">Today’s Hottest Payouts</h2>
           <p className="text-sm text-slate-600">Tap any button to start — limited‑time, high‑CPM tasks for US audience.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {offers.map((o) => (
-            <article key={o.id} className="group rounded-xl p-3 bg-white border border-slate-200 hover:shadow-lg transition">
+            <article key={o.id} className="group p-3 bg-white hover:shadow transition">
               <div className="flex items-center justify-between text-slate-900">
                 <span className="text-sm font-semibold">⚡ Instant Reward • ${o.earn.toFixed(2)}</span>
                 <span className="text-xs text-amber-500">{"★".repeat(o.rating)}{"☆".repeat(5 - o.rating)}</span>
@@ -385,12 +365,12 @@ export default function Index() {
         </div>
       </section>
 
-      <section className="rounded-2xl p-5 sm:p-6 bg-white border border-slate-200 shadow-md">
+      <section className="p-5 sm:p-6">
         <h2 className="text-lg font-bold">কিভাবে কাজ করে?</h2>
         <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
           <li>যেকোনো অফার বাটনে ক্লিক করুন।</li>
           <li>সাইটে ৩০ সেকেন্ড কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
-          <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং পয়েন্ট যুক্ত হবে (১/২/২/৪/��)।</li>
+          <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং পয়েন্ট যুক্ত ���বে (১/২/২/৪/৫)।</li>
           <li>পয়েন্ট ব্যালেন্স থেকে USDT তে উইথড্র নিন।</li>
         </ol>
       </section>

@@ -347,7 +347,7 @@ export default function Index() {
               <p className="mt-2 text-lg font-bold text-blue-700">${o.earn.toFixed(2)}</p>
               <p className="text-[11px] text-slate-500 mt-1">Do the task as instructed (visit/app install/survey/register). Stay 60s on the site, then return to claim.</p>
               <Button asChild className="mt-2 w-full bg-blue-600 text-white hover:bg-blue-700">
-                <a href={o.link} onClick={() => clickOffer(o.id, o.link, o.earn)}>
+                <a href={o.link} target="_blank" rel="noopener noreferrer" onClick={() => clickOffer(o.id, o.link, o.earn)}>
                   ${o.earn.toFixed(2)}
                 </a>
               </Button>

@@ -47,6 +47,13 @@ export default function Withdraw() {
     }
   };
 
+  const recent = [
+    { id: "wd_A91", name: "David R.", amount: 128.5, ts: Date.now() - 1000 * 60 * 15 },
+    { id: "wd_Z73", name: "Mia P.", amount: 212.0, ts: Date.now() - 1000 * 60 * 42 },
+    { id: "wd_K20", name: "Ethan L.", amount: 100.0, ts: Date.now() - 1000 * 60 * 90 },
+    { id: "wd_Q55", name: "Sophia W.", amount: 156.75, ts: Date.now() - 1000 * 60 * 240 },
+  ];
+
   return (
     <div className="max-w-md mx-auto py-8">
       <h1 className="text-2xl font-bold mb-6">Withdraw</h1>
@@ -61,11 +68,26 @@ export default function Withdraw() {
         </div>
         <div>
           <label className="text-xs text-slate-600">Amount</label>
-          <input value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full mt-1 rounded-lg bg-white p-3 outline-none ring-1 ring-slate-300 focus:ring-2 focus:ring-slate-500" placeholder="e.g. 10" />
+          <input value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full mt-1 rounded-lg bg-white p-3 outline-none ring-1 ring-slate-300 focus:ring-2 focus:ring-slate-500" placeholder="e.g. 120 (min $100)" />
         </div>
-        <div className="text-sm text-slate-600">Available: {state.balance}</div>
+        <div className="text-sm text-slate-600">Available: {state.balance.toFixed(2)} USD</div>
         <Button onClick={submit} disabled={loading} className="w-full bg-slate-900 text-white hover:bg-slate-800">{loading ? "Submitting..." : "Submit"}</Button>
         <Button onClick={() => navigate("/")} variant="secondary" className="w-full bg-slate-100 text-slate-900 hover:bg-slate-200">Back</Button>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold mb-3">Recent Withdrawals</h2>
+        <ul className="divide-y divide-slate-200 bg-white rounded-lg ring-1 ring-slate-200">
+          {recent.map((r) => (
+            <li key={r.id} className="flex items-center justify-between p-3">
+              <div className="text-sm text-slate-700">
+                <p className="font-medium">{r.name}</p>
+                <p className="text-xs text-slate-500">{new Date(r.ts).toLocaleString()}</p>
+              </div>
+              <div className="text-sm font-semibold text-emerald-700">${r.amount.toFixed(2)}</div>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

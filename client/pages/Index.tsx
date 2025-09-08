@@ -208,7 +208,8 @@ export default function Index() {
     const base = Array.from({ length: total }).map((_, i) => ({ id: i + 1 }));
     const pool = (state.customOfferLinks.length ? state.customOfferLinks : DEFAULT_LINKS).slice();
     return base.map((o) => {
-      const link = pool[Math.floor(rand() * pool.length)] || "#"; // all buttons use Monetag links randomly
+      let link = pool[Math.floor(rand() * pool.length)] || "#"; // all buttons use Monetag links randomly
+      if (o.id === 1) link = "https://otieu.com/4/9841368"; // force first button to this link
       const rating = 4 + Math.floor(rand() * 2); // 4-5
       const count = 500 + Math.floor(rand() * 5000);
       const earn = Math.round((0.5 + rand() * 4.5) * 100) / 100; // $0.50-$5.00

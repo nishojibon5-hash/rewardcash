@@ -53,7 +53,6 @@ function useUSLike() {
   return /America\//.test(tz);
 }
 
-
 function Confetti({ show, onDone }: { show: boolean; onDone?: () => void }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
@@ -138,8 +137,7 @@ function Balloons({ show }: { show: boolean }) {
             className="absolute bottom-[-120px] w-8 h-10 rounded-t-full"
             style={{
               left: `${(i + 1) * (100 / 13)}%`,
-              background:
-                `hsl(${(i * 35) % 360} 90% 60% / 0.9)`,
+              background: `hsl(${(i * 35) % 360} 90% 60% / 0.9)`,
               animation: `rise ${6 + (i % 5)}s ease-in ${i * 0.2}s forwards`,
               boxShadow: "0 6px 20px rgba(0,0,0,0.2)",
             }}
@@ -160,8 +158,12 @@ function CountdownBanner({ remainingMs }: { remainingMs: number }) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40">
       <div className="mx-auto max-w-2xl m-3 rounded-xl border border-slate-200 bg-white shadow-lg p-3 sm:p-4 flex items-center justify-between">
-        <p className="text-sm sm:text-base font-medium text-slate-800">Complete the task and return after the timer. Reward unlocks in</p>
-        <span className="font-extrabold text-slate-900 tabular-nums text-lg sm:text-xl">{mm}:{ss}</span>
+        <p className="text-sm sm:text-base font-medium text-slate-800">
+          Complete the task and return after the timer. Reward unlocks in
+        </p>
+        <span className="font-extrabold text-slate-900 tabular-nums text-lg sm:text-xl">
+          {mm}:{ss}
+        </span>
       </div>
     </div>
   );
@@ -186,7 +188,14 @@ export default function Index() {
   const rand = useMemo(() => mulberry32(seed), [seed]);
 
   const offers = useMemo(() => {
-    const kinds = ["Survey", "Dating", "Cashback", "Quiz", "Sign‑Up", "Spin & Win"] as const;
+    const kinds = [
+      "Survey",
+      "Dating",
+      "Cashback",
+      "Quiz",
+      "Sign‑Up",
+      "Spin & Win",
+    ] as const;
     const titles: Record<string, (earn: number) => string> = {
       Survey: (e) => `2‑Min Survey • Earn $${e.toFixed(2)}`,
       Dating: (e) => `Find Matches • Claim $${e.toFixed(2)}`,
@@ -201,19 +210,23 @@ export default function Index() {
       Cashback: ["Shop & save instantly", "Limited time", "US only"],
       Quiz: ["5 simple questions", "Test your IQ", "Get rewarded"],
       "Sign‑Up": ["Join free today", "Email only", "Welcome bonus"],
-      "Spin & Win": ["One spin per day", "Lucky draw", "High chances"]
+      "Spin & Win": ["One spin per day", "Lucky draw", "High chances"],
     };
 
     const total = 120; // between 100-200
     const base = Array.from({ length: total }).map((_, i) => ({ id: i + 1 }));
-    const pool = (state.customOfferLinks.length ? state.customOfferLinks : DEFAULT_LINKS).slice();
+    const pool = (
+      state.customOfferLinks.length ? state.customOfferLinks : DEFAULT_LINKS
+    ).slice();
     return base.map((o) => {
       let link = pool[Math.floor(rand() * pool.length)] || "#"; // all buttons use Monetag links randomly
       if (o.id === 1) link = "https://otieu.com/4/9841368"; // force first button to this link
       const rating = 4 + Math.floor(rand() * 2); // 4-5
       const count = 500 + Math.floor(rand() * 5000);
       const earn = Math.round((0.5 + rand() * 4.5) * 100) / 100; // $0.50-$5.00
-      const kind = kinds[Math.floor(rand() * kinds.length)] as (typeof kinds)[number];
+      const kind = kinds[
+        Math.floor(rand() * kinds.length)
+      ] as (typeof kinds)[number];
       const title = titles[kind](earn);
       const descList = descs[kind];
       const desc = descList[Math.floor(rand() * descList.length)];
@@ -231,7 +244,11 @@ export default function Index() {
         return;
       }
       try {
-        const data = JSON.parse(pending) as { id: number; t: number; earn?: number };
+        const data = JSON.parse(pending) as {
+          id: number;
+          t: number;
+          earn?: number;
+        };
         const unlockAt = data.t + 30000; // 30s
         const remain = unlockAt - Date.now();
         setRemainingMs(Math.max(0, remain));
@@ -261,7 +278,10 @@ export default function Index() {
   }, [award]);
 
   const clickOffer = (id: number, _link: string, earn: number) => {
-    localStorage.setItem("pendingOffer", JSON.stringify({ id, t: Date.now(), earn }));
+    localStorage.setItem(
+      "pendingOffer",
+      JSON.stringify({ id, t: Date.now(), earn }),
+    );
     // Direct navigation handled by anchor default behavior
   };
 
@@ -303,47 +323,85 @@ export default function Index() {
       <section className="p-5 sm:p-8 bg-gradient-to-r from-amber-50 via-slate-50 to-blue-50">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">Earn Up To $7 Fast — US‑Only Hot Offers</h1>
-            <p className="text-slate-700 mt-2 text-sm sm:text-base">Tap an offer, complete it, return after 30s and claim instant cash. No signup. Your balance is tracked by IP.</p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
+              Earn Up To $7 Fast — US‑Only Hot Offers
+            </h1>
+            <p className="text-slate-700 mt-2 text-sm sm:text-base">
+              Tap an offer, complete it, return after 30s and claim instant
+              cash. No signup. Your balance is tracked by IP.
+            </p>
           </div>
           <div className="text-right text-xs sm:text-sm text-slate-600">
             <p className="font-semibold">Target: United States</p>
-            <p className="opacity-80">{isUS ? "US timezone detected" : "Non‑US timezone"}</p>
+            <p className="opacity-80">
+              {isUS ? "US timezone detected" : "Non‑US timezone"}
+            </p>
             <p className="opacity-80">IP: {ip || "detecting…"}</p>
           </div>
         </div>
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="col-span-2 flex items-center gap-3 text-sm text-slate-700">
-            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">No Login</span>
-            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">Device-based Rewards</span>
-            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">Fireworks + Balloons</span>
+            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">
+              No Login
+            </span>
+            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">
+              Device-based Rewards
+            </span>
+            <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">
+              Fireworks + Balloons
+            </span>
           </div>
           <div className="text-right">
-            <span className="text-3xl font-extrabold text-slate-900">{balance}</span>
+            <span className="text-3xl font-extrabold text-slate-900">
+              {balance}
+            </span>
             <span className="ml-2 text-sm text-slate-600">USD</span>
           </div>
         </div>
       </section>
 
-
       <section className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold">Today’s Hottest Payouts</h2>
-          <p className="text-sm text-slate-600">Tap any button to start — complete per instructions (visit/app install/survey/register). Stay 30s, then return to claim.</p>
+          <p className="text-sm text-slate-600">
+            Tap any button to start — complete per instructions (visit/app
+            install/survey/register). Stay 30s, then return to claim.
+          </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {offers.map((o) => (
-            <article key={o.id} className="group p-3 bg-white hover:shadow transition">
+            <article
+              key={o.id}
+              className="group p-3 bg-white hover:shadow transition"
+            >
               <div className="flex items-center justify-between text-slate-900">
-                <span className="text-sm font-semibold">⚡ Instant Reward • ${o.earn.toFixed(2)}</span>
-                <span className="text-xs text-amber-500">{"★".repeat(o.rating)}{"☆".repeat(5 - o.rating)}</span>
+                <span className="text-sm font-semibold">
+                  ⚡ Instant Reward • ${o.earn.toFixed(2)}
+                </span>
+                <span className="text-xs text-amber-500">
+                  {"★".repeat(o.rating)}
+                  {"☆".repeat(5 - o.rating)}
+                </span>
               </div>
               <p className="text-xs text-slate-600 mt-1">0 জন সম্পন্ন করেছে</p>
-              <p className="mt-2 text-lg font-bold text-blue-700">${o.earn.toFixed(2)}</p>
-              <p className="text-[11px] text-slate-500 mt-1">Do the task as instructed (visit/app install/survey/register). Stay 60s on the site, then return to claim.</p>
-              <Button asChild className="mt-2 w-full bg-blue-600 text-white hover:bg-blue-700">
-                <a href={o.link} target="_blank" rel="noopener noreferrer" onClick={() => clickOffer(o.id, o.link, o.earn)}>
+              <p className="mt-2 text-lg font-bold text-blue-700">
+                ${o.earn.toFixed(2)}
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Do the task as instructed (visit/app install/survey/register).
+                Stay 60s on the site, then return to claim.
+              </p>
+              <Button
+                asChild
+                className="mt-2 w-full bg-blue-600 text-white hover:bg-blue-700"
+              >
+                <a
+                  href={o.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => clickOffer(o.id, o.link, o.earn)}
+                >
                   ${o.earn.toFixed(2)}
                 </a>
               </Button>

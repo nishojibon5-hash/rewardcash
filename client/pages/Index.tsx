@@ -319,8 +319,8 @@ export default function Index() {
       <section className="rounded-2xl p-5 sm:p-8 bg-white border border-slate-200 shadow-md">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">লোভনীয় অফার — এখনই আয় শুরু করুন!</h1>
-            <p className="text-slate-600 mt-1 text-sm sm:text-base">সার্ভে, ডেটিং, ক্যাশব্যাকসহ নানা ধরনের অফার। ক্লিক করুন, কাজ সম্পূর্ণ করুন, ১ মিনিট পরে ফিরে এলে বেলুন + আতশবাজি আর রিওয়ার্ড যুক্ত হবে।</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">Earn Up To $7 Fast — US‑Only Hot Offers</h1>
+            <p className="text-slate-600 mt-1 text-sm sm:text-base">Tap an offer, complete it, return after 60s and claim instant cash. No signup. Your balance is tracked by IP.</p>
           </div>
           <div className="text-right text-xs sm:text-sm text-slate-600">
             <p className="font-semibold">Target: United States</p>
@@ -342,7 +342,7 @@ export default function Index() {
         </div>
       </section>
 
-      <section className="rounded-2xl p-5 sm:p-6 bg-white border border-slate-200 shadow-md">
+      <section id="withdraw" className="rounded-2xl p-5 sm:p-6 bg-white border border-slate-200 shadow-md">
         <h2 className="text-xl font-bold mb-4">Balance & Withdraw (USDT)</h2>
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
           <div className="sm:col-span-2">
@@ -365,20 +365,20 @@ export default function Index() {
 
       <section className="rounded-2xl p-4 sm:p-6 bg-white border border-slate-200 shadow-md">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl font-bold">Trending Offers</h2>
-          <p className="text-sm text-slate-600">Showing {offers.length} offers · ~20% with custom links</p>
+          <h2 className="text-xl font-bold">Today’s Hottest Payouts</h2>
+          <p className="text-sm text-slate-600">Tap any button to start — limited‑time, high‑CPM tasks for US audience.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {offers.map((o) => (
             <article key={o.id} className="group rounded-xl p-3 bg-white border border-slate-200 hover:shadow-lg transition">
-              <div className="flex items-center justify-between">
-                <span className="text-xs px-2 py-1 rounded bg-slate-100 border border-slate-200 text-slate-700">#{o.id}</span>
-                <span className="text-xs text-amber-500">{"★".repeat(o.rating)}</span>
+              <div className="flex items-center justify-between text-slate-900">
+                <span className="text-sm font-semibold">⚡ Instant Reward • ${o.earn.toFixed(2)}</span>
+                <span className="text-xs text-amber-500">{"★".repeat(o.rating)}{"☆".repeat(5 - o.rating)}</span>
               </div>
-              <p className="mt-2 text-sm font-semibold text-slate-900">{o.title}</p>
-              <p className="text-xs text-slate-600 mt-1">{o.desc} · {o.count.toLocaleString()} doing this</p>
-              <Button onClick={() => clickOffer(o.id, o.link)} className="mt-2 w-full bg-slate-900 text-white hover:bg-slate-800">
-                Claim ${o.earn.toFixed(2)}
+              <p className="text-xs text-slate-600 mt-1">0 জন সম্পন্ন করেছে</p>
+              <p className="mt-2 text-lg font-bold text-blue-700">${o.earn.toFixed(2)}</p>
+              <Button onClick={() => clickOffer(o.id, o.link)} className="mt-2 w-full bg-blue-600 text-white hover:bg-blue-700">
+                ${o.earn.toFixed(2)}
               </Button>
             </article>
           ))}
@@ -389,7 +389,7 @@ export default function Index() {
         <h2 className="text-lg font-bold">কিভাবে কাজ করে?</h2>
         <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
           <li>যেকোনো অফার বাটনে ক্লিক করুন।</li>
-          <li>সাইটে ১ মিনিট কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন��ত)।</li>
+          <li>সাইটে ১ মিনিট কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
           <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং পয়েন্ট যুক্ত হবে (১/২/২/৪/৫)।</li>
           <li>পয়েন্ট ব্যালেন্স থেকে USDT তে উইথড্র নিন।</li>
         </ol>

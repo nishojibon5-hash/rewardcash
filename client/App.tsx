@@ -22,8 +22,13 @@ function Layout() {
       <header className="sticky top-0 z-40 backdrop-blur border-b border-slate-200 bg-white/80">
         <div className="container flex items-center justify-between py-3">
           <Link to="/" className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-slate-900 grid place-items-center shadow text-white">
-              <span className="font-extrabold">R</span>
+            <div className="size-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 grid place-items-center shadow text-white">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <rect x="3" y="6" width="18" height="12" rx="2"></rect>
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M7 8a2 2 0 0 1 2-2"></path>
+                <path d="M17 16a2 2 0 0 1-2 2"></path>
+              </svg>
             </div>
             <span className="font-extrabold tracking-tight text-lg">RewardCash</span>
           </Link>

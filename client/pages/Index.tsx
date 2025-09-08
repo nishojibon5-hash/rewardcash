@@ -222,45 +222,41 @@ export default function Index() {
   }, [rand, state.customOfferLinks]);
 
   useEffect(() => {
-    let interval: number | undefined;
+    let timer: number | undefined;
+
     const check = () => {
       const pending = localStorage.getItem("pendingOffer");
-      if (pending) {
-        try {
-          const data = JSON.parse(pending) as { id: number; t: number; earn?: number };
-          const unlockAt = data.t + 30000; // 30s
-          const now = Date.now();
-          const remain = unlockAt - now;
-          if (remain <= 0) {
-            const add = typeof data.earn === "number" ? data.earn : 0;
-            if (add > 0) award(add);
-            localStorage.removeItem("pendingOffer");
-            setRemainingMs(0);
-            setShowBalloons(true);
-            setShowConfetti(true);
-            setTimeout(() => setShowBalloons(false), 4000);
-            if (interval) window.clearInterval(interval);
-          } else {
-            setRemainingMs(remain);
-            if (!interval) {
-              interval = window.setInterval(() => setRemainingMs((m) => Math.max(0, m - 1000)), 1000);
-            }
-          }
-        } catch {
-          setRemainingMs(0);
-        }
-      } else {
+      if (!pending) {
         setRemainingMs(0);
-        if (interval) window.clearInterval(interval);
+        return;
+      }
+      try {
+        const data = JSON.parse(pending) as { id: number; t: number; earn?: number };
+        const unlockAt = data.t + 30000; // 30s
+        const remain = unlockAt - Date.now();
+        setRemainingMs(Math.max(0, remain));
+        if (remain <= 0) {
+          const add = typeof data.earn === "number" ? data.earn : 0;
+          if (add > 0) award(add);
+          localStorage.removeItem("pendingOffer");
+          setShowBalloons(true);
+          setShowConfetti(true);
+          setTimeout(() => setShowBalloons(false), 4000);
+        }
+      } catch {
+        setRemainingMs(0);
       }
     };
+
+    timer = window.setInterval(check, 1000);
     window.addEventListener("focus", check);
     document.addEventListener("visibilitychange", check);
     check();
+
     return () => {
+      if (timer) window.clearInterval(timer);
       window.removeEventListener("focus", check);
       document.removeEventListener("visibilitychange", check);
-      if (interval) window.clearInterval(interval);
     };
   }, [award]);
 
@@ -359,7 +355,7 @@ export default function Index() {
       <section className="p-5 sm:p-6">
         <h2 className="text-lg font-bold">কিভাবে কাজ করে?</h2>
         <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
-          <li>যেকোনো অফার বাটনে ক্লিক করুন।</li>
+          <li>��েকোনো অফার বাটনে ক্লিক করুন।</li>
           <li>সাইটে ৩০ সেকেন্ড কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
           <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং আয় ব্যালেন্সে যুক্ত হবে।</li>
           <li>ব্যালেন্স $100 হলে উইথড্র নিন।</li>

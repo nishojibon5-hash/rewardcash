@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAppStore } from "@/store/app-store";
 
 // Default links provided by user
 const DEFAULT_LINKS: string[] = [
@@ -34,15 +35,17 @@ function mulberry32(a: number) {
   };
 }
 
-function useIP() {
-  const [ip, setIp] = useState<string>("");
+function useIPWithStore() {
+  const { state, setIp } = useAppStore();
   useEffect(() => {
-    fetch("/api/ip")
-      .then((r) => r.json())
-      .then((d) => setIp(d.ip ?? ""))
-      .catch(() => {});
-  }, []);
-  return ip;
+    if (!state.ip) {
+      fetch("/api/ip")
+        .then((r) => r.json())
+        .then((d) => setIp(d.ip ?? ""))
+        .catch(() => {});
+    }
+  }, [state.ip, setIp]);
+  return state.ip;
 }
 
 function useUSLike() {
@@ -50,16 +53,6 @@ function useUSLike() {
   return /America\//.test(tz);
 }
 
-function useLocalNumber(key: string, initial = 0) {
-  const [val, setVal] = useState<number>(() => {
-    const v = localStorage.getItem(key);
-    return v ? Number(v) : initial;
-  });
-  useEffect(() => {
-    localStorage.setItem(key, String(val));
-  }, [key, val]);
-  return [val, setVal] as const;
-}
 
 function Confetti({ show, onDone }: { show: boolean; onDone?: () => void }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
@@ -159,9 +152,10 @@ function Balloons({ show }: { show: boolean }) {
 }
 
 export default function Index() {
-  const ip = useIP();
+  const { state, award, addWithdraw } = useAppStore();
+  const ip = useIPWithStore();
   const isUS = useUSLike();
-  const [balance, setBalance] = useLocalNumber("balance", 0);
+  const balance = state.balance;
   const [showConfetti, setShowConfetti] = useState(false);
   const [showBalloons, setShowBalloons] = useState(false);
   const [address, setAddress] = useState("");
@@ -177,9 +171,7 @@ export default function Index() {
   const offers = useMemo(() => {
     const total = 120; // between 100-200
     const base = Array.from({ length: total }).map((_, i) => ({ id: i + 1 }));
-    const stored = localStorage.getItem("customOfferLinks");
-    const custom: string[] = stored ? (() => { try { return JSON.parse(stored);} catch { return []; } })() : [];
-    const pool = (custom.length ? custom : DEFAULT_LINKS).slice();
+    const pool = (state.customOfferLinks.length ? state.customOfferLinks : DEFAULT_LINKS).slice();
     const minSpecial = 20;
     const specialCount = Math.max(minSpecial, Math.round(total * 0.2));
     const indices = new Set<number>();
@@ -205,7 +197,7 @@ export default function Index() {
           if (elapsed > 3000) {
             const awards = [1, 2, 2, 4, 5];
             const add = awards[Math.floor(Math.random() * awards.length)];
-            setBalance((b) => b + add);
+            award(add);
             localStorage.removeItem("pendingOffer");
             setShowBalloons(true);
             setShowConfetti(true);
@@ -248,7 +240,7 @@ export default function Index() {
       });
       const data = await res.json();
       if (data.ok) {
-        setBalance(balance - amt);
+        addWithdraw({ id: data.id, address, amount: amt, ts: Date.now() });
         setAmount("");
         alert(`Withdrawal requested. ID: ${data.id}`);
       } else {
@@ -268,7 +260,7 @@ export default function Index() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">নান্দনিক মোবাইল অফার হাব</h1>
-            <p className="text-white/80 mt-1 text-sm sm:text-base">US না���রিকদের জন্য আকর্ষণীয় অফার—কোনো রেজিস্ট্রেশন লাগবে না। ক্লিক করুন, কাজ শেষ করুন, ফিরে এলে বেলুন + আতশবাজি, আর পয়েন্ট যুক্ত হবে।</p>
+            <p className="text-white/80 mt-1 text-sm sm:text-base">US নাগরিকদের জন্য আকর্ষণীয় অফার—কোনো রেজিস্ট্রেশন লাগবে না। ক্লিক করুন, কাজ শেষ করুন, ফিরে এলে বেলুন + আতশবাজি, আর পয়েন্ট যুক্ত হবে।</p>
           </div>
           <div className="text-right text-xs sm:text-sm text-white/80">
             <p className="font-semibold">Target: United States</p>

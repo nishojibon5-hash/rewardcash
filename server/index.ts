@@ -22,7 +22,15 @@ export function createServer() {
   // Basic dynamic sitemap for SEO (free traffic)
   app.get("/sitemap.xml", (req, res) => {
     const origin = `${req.protocol}://${req.headers.host}`;
-    const urls = ["/", "/withdraw", "/admin"];
+    const baseUrls = ["/", "/withdraw", "/admin"];
+    let landingUrls: string[] = [];
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const landings = require("../shared/landings");
+      const list = (landings.LANDINGS || []) as Array<{ slug: string }>;
+      landingUrls = list.map((l) => `/l/${l.slug}`);
+    } catch {}
+    const urls = [...baseUrls, ...landingUrls];
     const today = new Date().toISOString().slice(0, 10);
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
       `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` +

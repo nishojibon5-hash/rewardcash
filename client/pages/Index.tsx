@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ShareBar from "@/components/ShareBar";
-import { LANDINGS } from "@shared/landings";
+import { ALL_LANDINGS } from "@shared/landings";
 import { useAppStore } from "@/store/app-store";
 
 // Default links provided by user
@@ -384,7 +384,7 @@ export default function Index() {
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <h2 className="text-lg font-bold">Explore Topics</h2>
           <ul className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm">
-            {LANDINGS.slice(0, 8).map((l) => (
+            {ALL_LANDINGS.slice(0, 8).map((l) => (
               <li key={l.slug}>
                 <a
                   className="text-blue-600 hover:underline"

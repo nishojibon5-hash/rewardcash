@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { LANDINGS, getLanding } from "@shared/landings";
+import { LANDINGS, ALL_LANDINGS, getLanding } from "@shared/landings";
 import ShareBar from "@/components/ShareBar";
 
 function setMeta(description: string) {
@@ -53,7 +53,7 @@ export default function Landing() {
           We couldn't find this page. Explore topics below.
         </p>
         <ul className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-          {LANDINGS.map((l) => (
+          {ALL_LANDINGS.map((l) => (
             <li key={l.slug}>
               <Link
                 className="text-blue-600 hover:underline"
@@ -131,7 +131,7 @@ export default function Landing() {
       <section className="p-4 sm:p-6">
         <h2 className="text-lg font-bold">Explore More</h2>
         <ul className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm">
-          {LANDINGS.filter((l) => l.slug !== landing.slug)
+          {ALL_LANDINGS.filter((l) => l.slug !== landing.slug)
             .slice(0, 8)
             .map((l) => (
               <li key={l.slug}>

@@ -8,6 +8,8 @@ export type Landing = {
   faqs: { q: string; a: string }[];
 };
 
+import { GENERATED_LANDINGS } from "./landings.generated";
+
 export const LANDINGS: Landing[] = [
   {
     slug: "us-survey-offers",
@@ -254,3 +256,6 @@ export const LANDINGS: Landing[] = [
 export function getLanding(slug: string): Landing | undefined {
   return LANDINGS.find((l) => l.slug === slug);
 }
+
+// Merge generated landings at the end to allow manual overrides to take precedence
+export const ALL_LANDINGS: Landing[] = [...LANDINGS, ...GENERATED_LANDINGS];

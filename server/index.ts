@@ -107,7 +107,7 @@ export function createServer() {
   // Basic dynamic sitemap for SEO (free traffic)
   app.get("/sitemap.xml", (req, res) => {
     const origin = `${req.protocol}://${req.headers.host}`;
-    const baseUrls = ["/", "/withdraw", "/admin"];
+    const baseUrls = ["/", "/withdraw", "/admin", "/counter"];
     let landingUrls: string[] = [];
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires

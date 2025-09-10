@@ -1,5 +1,7 @@
 export default async function handler(req: any, res: any) {
-  const base = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://rewardcash.vercel.app";
+  const base = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://rewardcash.vercel.app";
   const sitemap = `${base}/sitemap.xml`;
   try {
     const targets = [

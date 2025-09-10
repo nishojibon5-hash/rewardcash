@@ -16,17 +16,29 @@ function slugify(s) {
 
 function makeLanding(kw) {
   const slug = slugify(kw);
-  const title = `${kw.replace(/\b\w/g, c => c.toUpperCase())} — Updated Guide`;
-  const h1 = kw.replace(/\b\w/g, c => c.toUpperCase());
+  const title = `${kw.replace(/\b\w/g, (c) => c.toUpperCase())} — Updated Guide`;
+  const h1 = kw.replace(/\b\w/g, (c) => c.toUpperCase());
   const description = `Fresh guide for ${kw} with tips, compliant steps, and quick actions for users.`;
   const keywords = kw.split(/\s+/).filter(Boolean);
   const sections = [
-    { heading: "Overview", content: `Everything you need to know about ${kw}.` },
-    { heading: "Quick Tips", content: `Keep pages fast, clear CTAs, and follow partner rules for ${kw}.` },
+    {
+      heading: "Overview",
+      content: `Everything you need to know about ${kw}.`,
+    },
+    {
+      heading: "Quick Tips",
+      content: `Keep pages fast, clear CTAs, and follow partner rules for ${kw}.`,
+    },
   ];
   const faqs = [
-    { q: `Is ${kw} legit?`, a: "Always follow terms and avoid misleading actions." },
-    { q: "How to get started?", a: "Pick a task, follow instructions, and return to claim." },
+    {
+      q: `Is ${kw} legit?`,
+      a: "Always follow terms and avoid misleading actions.",
+    },
+    {
+      q: "How to get started?",
+      a: "Pick a task, follow instructions, and return to claim.",
+    },
   ];
   return { slug, title, h1, description, keywords, sections, faqs };
 }

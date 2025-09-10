@@ -28,7 +28,10 @@ function pickCountry(req: import("express").Request): string {
     h("x-geo-country") ||
     h("fastly-country-code") ||
     ""
-  ).toString().trim().toUpperCase();
+  )
+    .toString()
+    .trim()
+    .toUpperCase();
   if (code) return code;
   const al = h("accept-language");
   const m = /-([A-Z]{2})\b/.exec(al);
@@ -37,12 +40,19 @@ function pickCountry(req: import("express").Request): string {
 }
 
 function bump(kind: "visit" | "task", country: string) {
-  if (kind === "visit") totals.visits += 1; else totals.tasks += 1;
+  if (kind === "visit") totals.visits += 1;
+  else totals.tasks += 1;
   const entry = (totals.perCountry[country] ||= { visits: 0, tasks: 0 });
-  if (kind === "visit") entry.visits += 1; else entry.tasks += 1;
+  if (kind === "visit") entry.visits += 1;
+  else entry.tasks += 1;
   totals.recent.unshift({ type: kind, country, at: Date.now() });
   totals.recent = totals.recent.slice(0, 50);
-  const payload = JSON.stringify({ type: kind, totals, country, at: Date.now() });
+  const payload = JSON.stringify({
+    type: kind,
+    totals,
+    country,
+    at: Date.now(),
+  });
   for (const res of sseClients) {
     res.write(`event: update\n`);
     res.write(`data: ${payload}\n\n`);
@@ -117,9 +127,15 @@ export function createServer() {
     } catch {}
     const urls = [...baseUrls, ...landingUrls];
     const today = new Date().toISOString().slice(0, 10);
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    const xml =
+      `<?xml version="1.0" encoding="UTF-8"?>\n` +
       `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` +
-      urls.map((u) => `\n  <url>\n    <loc>${origin}${u}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>${u === "/" ? "1.0" : "0.8"}</priority>\n  </url>`).join("") +
+      urls
+        .map(
+          (u) =>
+            `\n  <url>\n    <loc>${origin}${u}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>${u === "/" ? "1.0" : "0.8"}</priority>\n  </url>`,
+        )
+        .join("") +
       `\n</urlset>`;
     res.set("Content-Type", "application/xml").send(xml);
   });
@@ -127,14 +143,22 @@ export function createServer() {
   // Get client IP (best-effort)
   app.get("/api/ip", (req, res) => {
     // Express behind proxy may need trust proxy for real IP; this is a best-effort fallback
-    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "";
+    const ip =
+      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+      req.ip ||
+      "";
     res.json({ ip });
   });
 
   // Receive withdrawal requests (demo only)
   app.post("/api/withdraw", (req, res) => {
     const { address, amount } = req.body ?? {};
-    if (!address || typeof address !== "string" || !amount || Number.isNaN(Number(amount))) {
+    if (
+      !address ||
+      typeof address !== "string" ||
+      !amount ||
+      Number.isNaN(Number(amount))
+    ) {
       return res.status(400).json({ ok: false, error: "Invalid payload" });
     }
     const id = `wd_${Date.now().toString(36)}`;

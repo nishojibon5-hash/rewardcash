@@ -8,7 +8,8 @@ function encode(u: string) {
 export default function ShareBar({ className = "" }: { className?: string }) {
   const [copied, setCopied] = useState(false);
   const { shareUrl, shareText } = useMemo(() => {
-    const loc = typeof window !== "undefined" ? window.location : ({} as Location);
+    const loc =
+      typeof window !== "undefined" ? window.location : ({} as Location);
     const origin = loc?.origin || "";
     const path = loc?.pathname || "/";
     const url = `${origin}${path}?utm_source=share&utm_medium=social&utm_campaign=free_traffic`;
@@ -26,7 +27,8 @@ export default function ShareBar({ className = "" }: { className?: string }) {
     } catch {}
   };
 
-  const canWebShare = typeof navigator !== "undefined" && (navigator as any).share;
+  const canWebShare =
+    typeof navigator !== "undefined" && (navigator as any).share;
 
   const buttons = [
     {
@@ -53,7 +55,11 @@ export default function ShareBar({ className = "" }: { className?: string }) {
 
   const webShare = async () => {
     try {
-      await (navigator as any).share({ title: shareText, text: shareText, url: shareUrl });
+      await (navigator as any).share({
+        title: shareText,
+        text: shareText,
+        url: shareUrl,
+      });
     } catch {}
   };
 
@@ -61,15 +67,30 @@ export default function ShareBar({ className = "" }: { className?: string }) {
     <section className={`py-3 sm:py-4 ${className}`}>
       <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-slate-900">Share & Invite — Free traffic</p>
-          <p className="text-xs text-slate-600">Share this page to get more visitors from social channels.</p>
+          <p className="text-sm font-semibold text-slate-900">
+            Share & Invite — Free traffic
+          </p>
+          <p className="text-xs text-slate-600">
+            Share this page to get more visitors from social channels.
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {canWebShare ? (
-            <Button onClick={webShare} className="bg-emerald-600 hover:bg-emerald-700">Share</Button>
+            <Button
+              onClick={webShare}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              Share
+            </Button>
           ) : (
             buttons.map((b) => (
-              <a key={b.name} href={b.href} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-md bg-slate-900 text-white text-xs hover:bg-slate-800">
+              <a
+                key={b.name}
+                href={b.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2 rounded-md bg-slate-900 text-white text-xs hover:bg-slate-800"
+              >
                 {b.name}
               </a>
             ))

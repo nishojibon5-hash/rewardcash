@@ -35,7 +35,10 @@ export const LANDINGS: Landing[] = [
     ],
     faqs: [
       { q: "How long do surveys take?", a: "Usually 2–5 minutes per survey." },
-      { q: "Do I need an account?", a: "No signup is required here; rewards are device‑based." },
+      {
+        q: "Do I need an account?",
+        a: "No signup is required here; rewards are device‑based.",
+      },
     ],
   },
   {
@@ -58,7 +61,10 @@ export const LANDINGS: Landing[] = [
       },
     ],
     faqs: [
-      { q: "Is cashback instant?", a: "Most confirm within minutes to hours depending on the store." },
+      {
+        q: "Is cashback instant?",
+        a: "Most confirm within minutes to hours depending on the store.",
+      },
       { q: "Any fees?", a: "No fees from us. Store policies may vary." },
     ],
   },
@@ -82,8 +88,14 @@ export const LANDINGS: Landing[] = [
       },
     ],
     faqs: [
-      { q: "Do gift cards expire?", a: "Some do. Check each offer’s terms before claiming." },
-      { q: "Mobile or desktop?", a: "Most offers support both; mobile‑first tends to convert faster." },
+      {
+        q: "Do gift cards expire?",
+        a: "Some do. Check each offer’s terms before claiming.",
+      },
+      {
+        q: "Mobile or desktop?",
+        a: "Most offers support both; mobile‑first tends to convert faster.",
+      },
     ],
   },
   {
@@ -106,8 +118,14 @@ export const LANDINGS: Landing[] = [
       },
     ],
     faqs: [
-      { q: "What is CPA?", a: "Cost‑Per‑Action — you earn when the user completes a defined action." },
-      { q: "Are trials allowed?", a: "Follow each partner’s terms; some forbid incentivized trials." },
+      {
+        q: "What is CPA?",
+        a: "Cost‑Per‑Action — you earn when the user completes a defined action.",
+      },
+      {
+        q: "Are trials allowed?",
+        a: "Follow each partner’s terms; some forbid incentivized trials.",
+      },
     ],
   },
   {
@@ -130,8 +148,14 @@ export const LANDINGS: Landing[] = [
       },
     ],
     faqs: [
-      { q: "How is progress tracked?", a: "By device. Keep the same browser to avoid resets." },
-      { q: "Can I withdraw anytime?", a: "Withdraw once you reach the minimum balance threshold." },
+      {
+        q: "How is progress tracked?",
+        a: "By device. Keep the same browser to avoid resets.",
+      },
+      {
+        q: "Can I withdraw anytime?",
+        a: "Withdraw once you reach the minimum balance threshold.",
+      },
     ],
   },
   {
@@ -154,7 +178,10 @@ export const LANDINGS: Landing[] = [
       },
     ],
     faqs: [
-      { q: "Do I need Wi‑Fi?", a: "Recommended for larger downloads and stable tracking." },
+      {
+        q: "Do I need Wi‑Fi?",
+        a: "Recommended for larger downloads and stable tracking.",
+      },
       { q: "Tablet support?", a: "Yes, most offers work on tablets as well." },
     ],
   },
@@ -164,7 +191,11 @@ export const LANDINGS: Landing[] = [
     h1: "Student Earn Online (USA)",
     description:
       "Simple ways for students to earn online: surveys, apps, and cashback. Time‑boxed, safe, and verified.",
-    keywords: ["student earn usa", "student jobs online", "survey for students"],
+    keywords: [
+      "student earn usa",
+      "student jobs online",
+      "survey for students",
+    ],
     sections: [
       {
         heading: "Time Management",
@@ -178,8 +209,14 @@ export const LANDINGS: Landing[] = [
       },
     ],
     faqs: [
-      { q: "Age requirements?", a: "Some offers are 18+; check each offer’s terms." },
-      { q: "Payment method?", a: "Withdraw to supported methods after reaching the threshold." },
+      {
+        q: "Age requirements?",
+        a: "Some offers are 18+; check each offer’s terms.",
+      },
+      {
+        q: "Payment method?",
+        a: "Withdraw to supported methods after reaching the threshold.",
+      },
     ],
   },
   {
@@ -202,8 +239,14 @@ export const LANDINGS: Landing[] = [
       },
     ],
     faqs: [
-      { q: "Can I use ad blockers?", a: "Disable blockers on partner pages to ensure tracking and rewards." },
-      { q: "Any regional limits?", a: "US‑focused, but many offers are available worldwide." },
+      {
+        q: "Can I use ad blockers?",
+        a: "Disable blockers on partner pages to ensure tracking and rewards.",
+      },
+      {
+        q: "Any regional limits?",
+        a: "US‑focused, but many offers are available worldwide.",
+      },
     ],
   },
 ];

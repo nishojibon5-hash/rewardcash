@@ -268,7 +268,9 @@ export default function Index() {
           const add = typeof data.earn === "number" ? data.earn : 0;
           if (add > 0) award(add);
           localStorage.removeItem("pendingOffer");
-          try { fetch("/api/metrics/task", { method: "POST" }); } catch {}
+          try {
+            fetch("/api/metrics/task", { method: "POST" });
+          } catch {}
           setShowBalloons(true);
           setShowConfetti(true);
           setTimeout(() => setShowBalloons(false), 4000);
@@ -345,7 +347,9 @@ export default function Index() {
             </p>
           </div>
           <div className="text-right text-xs sm:text-sm text-slate-600">
-            <p className="font-semibold">Top Target: USA • All countries supported</p>
+            <p className="font-semibold">
+              Top Target: USA • All countries supported
+            </p>
             <p className="opacity-80">
               {isUS ? "US timezone detected" : "Non‑US timezone"}
             </p>
@@ -382,7 +386,12 @@ export default function Index() {
           <ul className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm">
             {LANDINGS.slice(0, 8).map((l) => (
               <li key={l.slug}>
-                <a className="text-blue-600 hover:underline" href={`/l/${l.slug}`}>{l.h1}</a>
+                <a
+                  className="text-blue-600 hover:underline"
+                  href={`/l/${l.slug}`}
+                >
+                  {l.h1}
+                </a>
               </li>
             ))}
           </ul>

@@ -25,20 +25,45 @@ function Layout() {
         <div className="container flex items-center justify-between py-3">
           <Link to="/" className="flex items-center gap-2">
             <div className="size-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 grid place-items-center shadow text-white">
-              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <svg
+                viewBox="0 0 24 24"
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
                 <rect x="3" y="6" width="18" height="12" rx="2"></rect>
                 <circle cx="12" cy="12" r="3"></circle>
                 <path d="M7 8a2 2 0 0 1 2-2"></path>
                 <path d="M17 16a2 2 0 0 1-2 2"></path>
               </svg>
             </div>
-            <span className="font-extrabold tracking-tight text-lg">RewardCash</span>
+            <span className="font-extrabold tracking-tight text-lg">
+              RewardCash
+            </span>
           </Link>
           <nav className="flex items-center gap-3 text-sm text-slate-700">
-            <span className="px-3 py-1 rounded-full bg-white border border-slate-200">EN</span>
-            <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 tabular-nums">${usd}</span>
-            <Link to="/counter" className="px-3 py-1 rounded-full bg-white border border-slate-200 hover:bg-slate-50">Counter</Link>
-            <Link to="/withdraw" className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700">Withdraw</Link>
+            <span className="px-3 py-1 rounded-full bg-white border border-slate-200">
+              EN
+            </span>
+            <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 tabular-nums">
+              ${usd}
+            </span>
+            <Link
+              to="/counter"
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 hover:bg-slate-50"
+            >
+              Counter
+            </Link>
+            <Link
+              to="/withdraw"
+              className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Withdraw
+            </Link>
           </nav>
         </div>
       </header>
@@ -47,7 +72,10 @@ function Layout() {
       </main>
       <footer className="border-t border-slate-200 bg-white/70">
         <div className="container py-6 text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© {new Date().getFullYear()} RewardCash · Mobile-first US targeted offers</p>
+          <p>
+            © {new Date().getFullYear()} RewardCash · Mobile-first US targeted
+            offers
+          </p>
           <p>No registration required. Rewards are device-based.</p>
         </div>
       </footer>

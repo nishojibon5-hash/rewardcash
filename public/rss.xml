@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>RewardCash Updates</title>
+    <link>https://rewardcash.vercel.app/</link>
+    <description>New guides and offers from RewardCash</description>
+    <language>en</language>
+    <item>
+      <title>Live Traffic & Task Counter</title>
+      <link>https://rewardcash.vercel.app/counter</link>
+      <guid>https://rewardcash.vercel.app/counter</guid>
+    </item>
+    <item>
+      <title>Best US Survey Offers — Earn Fast</title>
+      <link>https://rewardcash.vercel.app/l/us-survey-offers</link>
+      <guid>https://rewardcash.vercel.app/l/us-survey-offers</guid>
+    </item>
+    <item>
+      <title>Top USA Cashback Deals — Save &amp; Earn</title>
+      <link>https://rewardcash.vercel.app/l/usa-cashback-deals</link>
+      <guid>https://rewardcash.vercel.app/l/usa-cashback-deals</guid>
+    </item>
+    <item>
+      <title>Free Gift Card Offers — Legit Ways to Earn</title>
+      <link>https://rewardcash.vercel.app/l/free-gift-card-offers</link>
+      <guid>https://rewardcash.vercel.app/l/free-gift-card-offers</guid>
+    </item>
+    <item>
+      <title>High Paying CPA Offers — Beginner Guide</title>
+      <link>https://rewardcash.vercel.app/l/high-paying-cpa-offers</link>
+      <guid>https://rewardcash.vercel.app/l/high-paying-cpa-offers</guid>
+    </item>
+  </channel>
+</rss>

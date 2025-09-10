@@ -4,6 +4,7 @@ import path from "path";
 const root = process.cwd();
 const keywordsPath = path.join(root, "content", "keywords.json");
 const outPath = path.join(root, "shared", "landings.generated.ts");
+const sitemapPath = path.join(root, "public", "sitemap.xml");
 
 function slugify(s) {
   return s

@@ -19,6 +19,18 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
+  // Basic dynamic sitemap for SEO (free traffic)
+  app.get("/sitemap.xml", (req, res) => {
+    const origin = `${req.protocol}://${req.headers.host}`;
+    const urls = ["/", "/withdraw", "/admin"];
+    const today = new Date().toISOString().slice(0, 10);
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+      `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` +
+      urls.map((u) => `\n  <url>\n    <loc>${origin}${u}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>${u === "/" ? "1.0" : "0.8"}</priority>\n  </url>`).join("") +
+      `\n</urlset>`;
+    res.set("Content-Type", "application/xml").send(xml);
+  });
+
   // Get client IP (best-effort)
   app.get("/api/ip", (req, res) => {
     // Express behind proxy may need trust proxy for real IP; this is a best-effort fallback

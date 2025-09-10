@@ -3,6 +3,52 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 
+type Totals = {
+  visits: number;
+  tasks: number;
+  perCountry: Record<string, { visits: number; tasks: number }>;
+  recent: { type: "visit" | "task"; country: string; at: number }[];
+};
+
+const totals: Totals = {
+  visits: 0,
+  tasks: 0,
+  perCountry: {},
+  recent: [],
+};
+
+const sseClients: Set<import("express").Response> = new Set();
+
+function pickCountry(req: import("express").Request): string {
+  const h = (name: string) => (req.headers[name] as string) || "";
+  const code = (
+    h("cf-ipcountry") ||
+    h("x-vercel-ip-country") ||
+    h("x-country") ||
+    h("x-geo-country") ||
+    h("fastly-country-code") ||
+    ""
+  ).toString().trim().toUpperCase();
+  if (code) return code;
+  const al = h("accept-language");
+  const m = /-([A-Z]{2})\b/.exec(al);
+  if (m) return m[1];
+  return "UN";
+}
+
+function bump(kind: "visit" | "task", country: string) {
+  if (kind === "visit") totals.visits += 1; else totals.tasks += 1;
+  const entry = (totals.perCountry[country] ||= { visits: 0, tasks: 0 });
+  if (kind === "visit") entry.visits += 1; else entry.tasks += 1;
+  totals.recent.unshift({ type: kind, country, at: Date.now() });
+  totals.recent = totals.recent.slice(0, 50);
+  const payload = JSON.stringify({ type: kind, totals, country, at: Date.now() });
+  for (const res of sseClients) {
+    res.write(`event: update\n`);
+    res.write(`data: ${payload}\n\n`);
+  }
+}
+
 export function createServer() {
   const app = express();
 

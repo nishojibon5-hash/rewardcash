@@ -324,7 +324,7 @@ export default function Index() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
-              Earn Up To $7 Fast — US‑Only Hot Offers
+              Earn Up To $7 Fast — Top Target USA • Available Worldwide
             </h1>
             <p className="text-slate-700 mt-2 text-sm sm:text-base">
               Tap an offer, complete it, return after 30s and claim instant
@@ -332,7 +332,7 @@ export default function Index() {
             </p>
           </div>
           <div className="text-right text-xs sm:text-sm text-slate-600">
-            <p className="font-semibold">Target: United States</p>
+            <p className="font-semibold">Top Target: USA • All countries supported</p>
             <p className="opacity-80">
               {isUS ? "US timezone detected" : "Non‑US timezone"}
             </p>
@@ -390,7 +390,7 @@ export default function Index() {
               </p>
               <p className="text-[11px] text-slate-500 mt-1">
                 Do the task as instructed (visit/app install/survey/register).
-                Stay 60s on the site, then return to claim.
+                Stay 30s on the site, then return to claim.
               </p>
               <Button
                 asChild

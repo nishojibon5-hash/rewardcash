@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import Withdraw from "./pages/Withdraw";
 import Landing from "./pages/Landing";
+import Counter from "./pages/Counter";
 import { AppStoreProvider, useAppStore } from "@/store/app-store";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ function Layout() {
           <nav className="flex items-center gap-3 text-sm text-slate-700">
             <span className="px-3 py-1 rounded-full bg-white border border-slate-200">EN</span>
             <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 tabular-nums">${usd}</span>
+            <Link to="/counter" className="px-3 py-1 rounded-full bg-white border border-slate-200 hover:bg-slate-50">Counter</Link>
             <Link to="/withdraw" className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700">Withdraw</Link>
           </nav>
         </div>
@@ -66,6 +68,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/withdraw" element={<Withdraw />} />
               <Route path="/l/:slug" element={<Landing />} />
+              <Route path="/counter" element={<Counter />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Route>

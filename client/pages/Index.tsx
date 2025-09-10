@@ -236,6 +236,16 @@ export default function Index() {
     });
   }, [rand, state.customOfferLinks]);
 
+  // Count a visit once per session
+  useEffect(() => {
+    const key = "metricsVisitedAt";
+    const seen = sessionStorage.getItem(key);
+    if (!seen) {
+      fetch("/api/metrics/visit", { method: "POST" }).catch(() => {});
+      sessionStorage.setItem(key, String(Date.now()));
+    }
+  }, []);
+
   useEffect(() => {
     let timer: number | undefined;
 
@@ -258,6 +268,7 @@ export default function Index() {
           const add = typeof data.earn === "number" ? data.earn : 0;
           if (add > 0) award(add);
           localStorage.removeItem("pendingOffer");
+          try { fetch("/api/metrics/task", { method: "POST" }); } catch {}
           setShowBalloons(true);
           setShowConfetti(true);
           setTimeout(() => setShowBalloons(false), 4000);

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ShareBar from "@/components/ShareBar";
+import { LANDINGS } from "@shared/landings";
 import { useAppStore } from "@/store/app-store";
 
 // Default links provided by user
@@ -364,6 +365,19 @@ export default function Index() {
 
       <ShareBar className="px-4 sm:px-6" />
 
+      <section className="px-4 sm:px-6">
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <h2 className="text-lg font-bold">Explore Topics</h2>
+          <ul className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm">
+            {LANDINGS.slice(0, 8).map((l) => (
+              <li key={l.slug}>
+                <a className="text-blue-600 hover:underline" href={`/l/${l.slug}`}>{l.h1}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       <section className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold">Today’s Hottest Payouts</h2>
@@ -417,7 +431,7 @@ export default function Index() {
         <h2 className="text-lg font-bold">কিভাবে কাজ করে?</h2>
         <ol className="mt-2 text-sm space-y-1 text-slate-700 list-decimal pl-5">
           <li>��েকোনো অফার বাটনে ক্লিক করুন।</li>
-          <li>সাইটে ৩০ সেকেন্ড কাজ কর���ন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
+          <li>সাইটে ৩০ সেকেন্ড কাজ করুন (কাউন্টডাউন শেষ না হওয়া পর্যন্ত)।</li>
           <li>ফিরে এলে বেলুন + আতশবাজি দেখাবে এবং আয় ব্যালেন্সে যুক্ত হবে।</li>
           <li>ব্যালেন্স $100 হলে উইথড্র নিন।</li>
         </ol>

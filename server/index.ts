@@ -65,6 +65,45 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
+  // Metrics: initial state
+  app.get("/api/metrics/state", (_req, res) => {
+    res.json(totals);
+  });
+
+  // Metrics: Server-Sent Events stream
+  app.get("/api/metrics/stream", (req, res) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    (res as any).flushHeaders?.();
+
+    sseClients.add(res);
+
+    const snapshot = JSON.stringify({ type: "state", totals, at: Date.now() });
+    res.write(`event: update\n`);
+    res.write(`data: ${snapshot}\n\n`);
+
+    const keep = setInterval(() => res.write(":\n\n"), 15000);
+    req.on("close", () => {
+      clearInterval(keep);
+      sseClients.delete(res);
+    });
+  });
+
+  // Metrics: count a visit
+  app.post("/api/metrics/visit", (req, res) => {
+    const country = pickCountry(req);
+    bump("visit", country);
+    res.json({ ok: true });
+  });
+
+  // Metrics: count a completed task
+  app.post("/api/metrics/task", (req, res) => {
+    const country = pickCountry(req);
+    bump("task", country);
+    res.json({ ok: true });
+  });
+
   // Basic dynamic sitemap for SEO (free traffic)
   app.get("/sitemap.xml", (req, res) => {
     const origin = `${req.protocol}://${req.headers.host}`;

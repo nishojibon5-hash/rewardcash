@@ -52,10 +52,36 @@ function main() {
   } catch {
     keywords = [];
   }
-  const items = Array.from(new Set(keywords)).map(makeLanding);
+  const uniq = Array.from(new Set(keywords));
+  const items = uniq.map(makeLanding);
   const content = `// Auto-generated file. Do not edit manually.\n\nimport type { Landing } from "./landings";\n\nexport const GENERATED_LANDINGS: Landing[] = ${JSON.stringify(items, null, 2)};\n`;
   fs.writeFileSync(outPath, content, "utf8");
   console.log(`Generated ${items.length} landings to ${outPath}`);
+
+  // Build static sitemap for Vercel
+  const today = new Date().toISOString().slice(0, 10);
+  const baseUrls = ["/", "/withdraw", "/admin", "/counter"];
+  const landingUrls = uniq.map((kw) => `/l/${slugify(kw)}`);
+  const urls = [...baseUrls, ...landingUrls];
+  const xml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls
+      .map((u) =>
+        [
+          "  <url>",
+          `    <loc>https://rewardcash.vercel.app${u}</loc>`,
+          `    <lastmod>${today}</lastmod>`,
+          `    <changefreq>${u === "/" ? "daily" : u.startsWith("/l/") ? "weekly" : "daily"}</changefreq>`,
+          `    <priority>${u === "/" ? "1.0" : "0.8"}</priority>`,
+          "  </url>",
+        ].join("\n"),
+      )
+      .join("\n") +
+    "\n</urlset>\n";
+  fs.mkdirSync(path.dirname(sitemapPath), { recursive: true });
+  fs.writeFileSync(sitemapPath, xml, "utf8");
+  console.log(`Sitemap written with ${urls.length} URLs to ${sitemapPath}`);
 }
 
 main();

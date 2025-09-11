@@ -96,7 +96,7 @@ export const LANDINGS: Landing[] = [
       },
       {
         q: "Mobile or desktop?",
-        a: "Most offers support both; mobile‑first tends to convert faster.",
+        a: "Most offers support both; mobile��first tends to convert faster.",
       },
     ],
   },
@@ -254,7 +254,7 @@ export const LANDINGS: Landing[] = [
 ];
 
 export function getLanding(slug: string): Landing | undefined {
-  return LANDINGS.find((l) => l.slug === slug);
+  return [...LANDINGS, ...GENERATED_LANDINGS].find((l) => l.slug === slug);
 }
 
 // Merge generated landings at the end to allow manual overrides to take precedence

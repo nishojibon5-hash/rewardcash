@@ -82,7 +82,8 @@ function main() {
   } catch {
     keywords = [];
   }
-  const uniq = Array.from(new Set(keywords));
+  const expanded = expandKeywords(keywords);
+  const uniq = Array.from(new Set(expanded)).slice(0, 300);
   const items = uniq.map(makeLanding);
   const content = `// Auto-generated file. Do not edit manually.\n\nimport type { Landing } from "./landings";\n\nexport const GENERATED_LANDINGS: Landing[] = ${JSON.stringify(items, null, 2)};\n`;
   fs.writeFileSync(outPath, content, "utf8");

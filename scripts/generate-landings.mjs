@@ -44,6 +44,36 @@ function makeLanding(kw) {
   return { slug, title, h1, description, keywords, sections, faqs };
 }
 
+function expandKeywords(seed = []) {
+  const bases = [
+    "us survey offers",
+    "usa cashback deals",
+    "free gift card offers",
+    "high paying cpa offers",
+    "instant rewards no signup",
+    "top us mobile offers",
+    "student earn online usa",
+    "save money shopping usa",
+    "app install offers usa",
+    "finance signup bonus usa",
+    "quick quiz win cash",
+    "spin and win offers",
+    "dating offers usa",
+    "coupon codes usa",
+    "free trials usa"
+  ];
+  const prefixes = ["best", "top", "legit", "free", "high paying", "quick", "2025"];
+  const suffixes = ["usa", "united states", "worldwide", "for students", "android", "ios", "mobile"];
+  const out = new Set(seed);
+  for (const b of bases) {
+    out.add(b);
+    for (const p of prefixes) out.add(`${p} ${b}`);
+    for (const s of suffixes) out.add(`${b} ${s}`);
+    for (const p of prefixes) for (const s of suffixes) out.add(`${p} ${b} ${s}`);
+  }
+  return Array.from(out);
+}
+
 function main() {
   let keywords = [];
   try {

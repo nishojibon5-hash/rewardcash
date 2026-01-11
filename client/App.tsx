@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import Withdraw from "./pages/Withdraw";
 import Landing from "./pages/Landing";
 import Counter from "./pages/Counter";
+import Stream from "./pages/Stream";
 import { AppStoreProvider, useAppStore } from "@/store/app-store";
 
 const queryClient = new QueryClient();

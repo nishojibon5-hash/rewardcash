@@ -54,6 +54,12 @@ function Layout() {
               ${usd}
             </span>
             <Link
+              to="/stream"
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 font-semibold"
+            >
+              🎬 Go Stream
+            </Link>
+            <Link
               to="/counter"
               className="px-3 py-1 rounded-full bg-white border border-slate-200 hover:bg-slate-50"
             >

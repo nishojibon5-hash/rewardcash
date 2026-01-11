@@ -50,7 +50,7 @@ export default function Stream() {
         lowerUrl.includes("facebook") ||
         lowerUrl.includes("drive.google") ||
         lowerUrl.includes("youtu.be") ||
-        lowerUrl.match(/\.(mp4|webm|hls|m3u8)$/i)
+        /\.(mp4|webm|hls|m3u8)$/i.test(lowerUrl)
       );
     } catch {
       return false;

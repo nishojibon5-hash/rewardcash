@@ -96,6 +96,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/withdraw" element={<Withdraw />} />
+              <Route path="/stream" element={<Stream />} />
               <Route path="/l/:slug" element={<Landing />} />
               <Route path="/counter" element={<Counter />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

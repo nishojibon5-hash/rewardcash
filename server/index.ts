@@ -2,6 +2,15 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import {
+  handleStartStream,
+  handleStopStream,
+  handleConnectPlatform,
+  handleDisconnectPlatform,
+  handleGetStreamStatus,
+  handleGetActiveStreams,
+  handleGetConnectedPlatforms,
+} from "./routes/stream";
 
 type Totals = {
   visits: number;

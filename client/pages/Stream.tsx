@@ -299,7 +299,68 @@ export default function Stream() {
               Stream videos from any source to YouTube, Facebook, Bilibili, and
               more — instantly and automatically
             </p>
+            <p className="text-sm text-purple-600 mt-3">
+              <strong>Streaming Mode:</strong> {streamingMethod}
+              {ffmpegStatus === "ready-wasm" && " ✅ (Mobile Compatible)"}
+            </p>
           </div>
+        </div>
+      </section>
+
+      {/* Streaming Method Info */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div
+          className={`p-4 rounded-lg border-2 ${
+            ffmpegStatus === "ready-wasm"
+              ? "border-emerald-300 bg-emerald-50"
+              : ffmpegStatus === "ready-server"
+                ? "border-blue-300 bg-blue-50"
+                : "border-orange-300 bg-orange-50"
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Smartphone className="w-5 h-5" />
+            <h3 className="font-semibold">
+              {ffmpegStatus === "ready-wasm"
+                ? "Browser FFmpeg"
+                : ffmpegStatus === "ready-server"
+                  ? "Server FFmpeg"
+                  : "Direct Stream"}
+            </h3>
+          </div>
+          <p className="text-sm">
+            {ffmpegStatus === "ready-wasm"
+              ? "✅ Running in your browser (no server needed)"
+              : ffmpegStatus === "ready-server"
+                ? "✅ Server has FFmpeg installed"
+                : "⚠️ Basic streaming (no transcoding)"}
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg border border-slate-200 bg-white">
+          <div className="flex items-center gap-2 mb-2">
+            <Cpu className="w-5 h-5" />
+            <h3 className="font-semibold">Processing</h3>
+          </div>
+          <p className="text-sm">
+            {ffmpegStatus === "ready-wasm"
+              ? "Client-side (your device)"
+              : "Server-side (cloud)"}
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg border border-slate-200 bg-white">
+          <div className="flex items-center gap-2 mb-2">
+            <Zap className="w-5 h-5" />
+            <h3 className="font-semibold">Speed</h3>
+          </div>
+          <p className="text-sm">
+            {ffmpegStatus === "ready-wasm"
+              ? "Real-time (no delay)"
+              : ffmpegStatus === "ready-server"
+                ? "1-2 seconds delay"
+                : "Instant"}
+          </p>
         </div>
       </section>
 

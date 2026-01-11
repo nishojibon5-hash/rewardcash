@@ -86,14 +86,16 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  // Streaming API routes
-  app.post("/api/stream/start", handleStartStream);
-  app.post("/api/stream/stop", handleStopStream);
-  app.post("/api/stream/connect", handleConnectPlatform);
-  app.post("/api/stream/disconnect", handleDisconnectPlatform);
-  app.get("/api/stream/:streamId", handleGetStreamStatus);
-  app.get("/api/stream", handleGetActiveStreams);
-  app.get("/api/stream/platforms/connected", handleGetConnectedPlatforms);
+  // Streaming API routes (Advanced)
+  app.post("/api/stream/start", handleStartStreamAdvanced);
+  app.post("/api/stream/stop", handleStopStreamAdvanced);
+  app.post("/api/stream/connect", handleConnectPlatformAdvanced);
+  app.post("/api/stream/disconnect", handleDisconnectPlatformAdvanced);
+  app.get("/api/stream/:streamId", handleGetStreamStatusAdvanced);
+  app.get("/api/stream", handleGetActiveStreamsAdvanced);
+  app.get("/api/stream/platforms/connected", handleGetConnectedPlatformsAdvanced);
+  app.get("/api/stream/check-ffmpeg", handleCheckFFmpeg);
+  app.post("/api/stream/extract", handleExtractVideo);
 
   // Metrics: initial state
   app.get("/api/metrics/state", (_req, res) => {

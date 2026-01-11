@@ -47,6 +47,51 @@ export default function Stream() {
   const [showConnections, setShowConnections] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [streamingMethod, setStreamingMethod] = useState<string>("detecting");
+  const [ffmpegStatus, setFFmpegStatus] = useState<string>("checking");
+
+  // Detect streaming method on mount
+  useEffect(() => {
+    const detectMethod = async () => {
+      try {
+        // Check server FFmpeg
+        const serverFFmpegAvailable = await checkFFmpegAvailable();
+
+        // Check client FFmpeg (WASM)
+        const clientFFmpegAvailable = isFFmpegAvailable();
+
+        // Auto-load WASM FFmpeg if available
+        if (!clientFFmpegAvailable) {
+          try {
+            const loaded = await loadFFmpeg();
+            setFFmpegStatus(
+              loaded
+                ? "ready-wasm"
+                : serverFFmpegAvailable
+                  ? "ready-server"
+                  : "ready-passthrough"
+            );
+          } catch {
+            setFFmpegStatus(
+              serverFFmpegAvailable ? "ready-server" : "ready-passthrough"
+            );
+          }
+        } else {
+          setFFmpegStatus("ready-wasm");
+        }
+
+        // Detect best method
+        const method = detectStreamingMethod(false, serverFFmpegAvailable);
+        setStreamingMethod(method.name);
+      } catch (err) {
+        console.error("Error detecting streaming method:", err);
+        setStreamingMethod("Direct Stream (Fallback)");
+        setFFmpegStatus("ready-passthrough");
+      }
+    };
+
+    detectMethod();
+  }, []);
 
   const [platforms, setPlatforms] = useState<Platform[]>([
     { id: "youtube", name: "YouTube", icon: "▶️", connected: false },

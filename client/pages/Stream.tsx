@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Play, Plus, Trash2, Link as LinkIcon } from "lucide-react";
+import {
+  AlertCircle,
+  Play,
+  Plus,
+  Trash2,
+  Link as LinkIcon,
+  Smartphone,
+  Cpu,
+  Zap,
+} from "lucide-react";
 import StreamConnections from "@/components/StreamConnections";
 import StreamViewer from "@/components/StreamViewer";
+import {
+  detectStreamingMethod,
+  checkFFmpegAvailable,
+  STREAMING_METHODS,
+} from "@/utils/streaming-worker";
+import { isFFmpegAvailable, loadFFmpeg } from "@/utils/ffmpeg-wasm";
 
 interface Platform {
   id: string;

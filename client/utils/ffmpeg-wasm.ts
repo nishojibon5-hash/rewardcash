@@ -1,14 +1,18 @@
 /**
  * Client-side FFmpeg using WebAssembly
  * Works on mobile without any server setup
- * No FFmpeg installation needed
+ * Uses npm package for better reliability than CDN
  */
 
-let FFmpegInstance: any = null;
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { toBlobURL } from "@ffmpeg/util";
+
+let FFmpegInstance: FFmpeg | null = null;
 let isFFmpegReady = false;
 
 /**
- * Load FFmpeg.js library (from CDN)
+ * Load FFmpeg.js library (from npm package)
+ * More reliable than CDN loading
  */
 export async function loadFFmpeg(): Promise<boolean> {
   try {
@@ -17,51 +21,52 @@ export async function loadFFmpeg(): Promise<boolean> {
       return true;
     }
 
-    // Load FFmpeg library from CDN
-    const script = document.createElement("script");
-    script.src =
-      "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js";
-    script.async = true;
+    // Check if browser supports WebAssembly
+    if (typeof window === "undefined" || !WebAssembly) {
+      console.warn("WebAssembly not available in this environment");
+      return false;
+    }
 
-    return new Promise((resolve) => {
-      script.onload = async () => {
-        try {
-          // Wait for FFmpeg to be available
-          if (typeof window === "undefined") {
-            resolve(false);
-            return;
-          }
+    // Create FFmpeg instance
+    FFmpegInstance = new FFmpeg();
 
-          const FFmpeg = (window as any).FFmpeg?.FFmpeg;
-          if (!FFmpeg) {
-            console.warn("FFmpeg library loaded but not available in window");
-            resolve(false);
-            return;
-          }
-
-          FFmpegInstance = new FFmpeg();
-
-          // Initialize
-          await FFmpegInstance.load();
-          isFFmpegReady = true;
-
-          console.log("✅ FFmpeg.js loaded and ready (client-side)");
-          resolve(true);
-        } catch (error) {
-          console.error("Failed to initialize FFmpeg:", error);
-          resolve(false);
-        }
-      };
-
-      script.onerror = () => {
-        console.error("Failed to load FFmpeg script from CDN");
-        resolve(false);
-      };
-
-      document.head.appendChild(script);
+    // Set up message handler for logging
+    FFmpegInstance.on("log", ({ message }: { message: string }) => {
+      console.log("[FFmpeg]", message);
     });
+
+    FFmpegInstance.on("progress", ({ progress, time }: { progress: number; time: number }) => {
+      console.log(`[FFmpeg] Progress: ${Math.round(progress * 100)}% - ${time}ms`);
+    });
+
+    // Load FFmpeg with proper core and wasm URLs from CDN
+    // These are the official jsdelivr URLs for @ffmpeg/core
+    const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
+    
+    try {
+      await FFmpegInstance.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+      });
+    } catch (innerError) {
+      console.error("Failed to load FFmpeg with custom URLs, trying default:", innerError);
+      // Fallback: try loading without specifying URLs (uses default CDN)
+      try {
+        await FFmpegInstance.load();
+      } catch (fallbackError) {
+        console.error("Failed to load FFmpeg with defaults:", fallbackError);
+        FFmpegInstance = null;
+        return false;
+      }
+    }
+
+    isFFmpegReady = true;
+    console.log("✅ FFmpeg.js loaded and ready (client-side WASM)");
+    return true;
   } catch (error) {
     console.error("Error loading FFmpeg:", error);
+    FFmpegInstance = null;
+    isFFmpegReady = false;
     return false;
   }
 }
@@ -76,15 +81,17 @@ export function isFFmpegAvailable(): boolean {
 /**
  * Extract video stream (client-side)
  */
-export async function extractVideoStreamClient(
-  videoUrl: string
-): Promise<Blob | null> {
+export async function extractVideoStreamClient(videoUrl: string): Promise<Blob | null> {
   try {
     if (!isFFmpegAvailable()) {
       const loaded = await loadFFmpeg();
       if (!loaded) {
         throw new Error("FFmpeg not available");
       }
+    }
+
+    if (!FFmpegInstance) {
+      throw new Error("FFmpeg instance not initialized");
     }
 
     console.log("Extracting video stream:", videoUrl);
@@ -94,7 +101,10 @@ export async function extractVideoStreamClient(
     const videoBlob = await response.blob();
 
     // Write to FFmpeg
-    await FFmpegInstance.writeFile("input.mp4", new Uint8Array(await videoBlob.arrayBuffer()));
+    await FFmpegInstance.writeFile(
+      "input.mp4",
+      new Uint8Array(await videoBlob.arrayBuffer())
+    );
 
     // Run FFmpeg command to transcode
     // This creates an HLS stream (m3u8) which works on all platforms
@@ -144,14 +154,19 @@ export async function convertVideoForStreaming(
       }
     }
 
+    if (!FFmpegInstance) {
+      throw new Error("FFmpeg instance not initialized");
+    }
+
     const inputArray = new Uint8Array(await inputBlob.arrayBuffer());
     await FFmpegInstance.writeFile("input", inputArray);
 
     // Listen to progress
     if (onProgress) {
-      FFmpegInstance.on("progress", (progress: any) => {
-        onProgress(Math.round(progress.progress * 100));
-      });
+      const progressHandler = ({ progress }: { progress: number }) => {
+        onProgress(Math.round(progress * 100));
+      };
+      FFmpegInstance.on("progress", progressHandler);
     }
 
     // Transcode to H.264 + AAC (compatible with all platforms)
@@ -199,13 +214,18 @@ export async function createHLSStream(
       }
     }
 
+    if (!FFmpegInstance) {
+      throw new Error("FFmpeg instance not initialized");
+    }
+
     const inputArray = new Uint8Array(await inputBlob.arrayBuffer());
     await FFmpegInstance.writeFile("input.mp4", inputArray);
 
     if (onProgress) {
-      FFmpegInstance.on("progress", (progress: any) => {
-        onProgress(Math.round(progress.progress * 100));
-      });
+      const progressHandler = ({ progress }: { progress: number }) => {
+        onProgress(Math.round(progress * 100));
+      };
+      FFmpegInstance.on("progress", progressHandler);
     }
 
     // Create HLS stream
@@ -242,9 +262,7 @@ export async function createHLSStream(
     // Try to read segment files (usually output0.ts, output1.ts, etc.)
     for (let i = 0; i < 100; i++) {
       try {
-        const segmentData = await FFmpegInstance.readFile(
-          `output${i}.ts`
-        );
+        const segmentData = await FFmpegInstance.readFile(`output${i}.ts`);
         if (segmentData) {
           segments.set(`output${i}.ts`, new Blob([segmentData.buffer]));
         }
@@ -269,7 +287,7 @@ export async function getFFmpegInfo(): Promise<string> {
     if (!isFFmpegAvailable()) {
       return "FFmpeg not available";
     }
-    return "FFmpeg WASM - Client-side processing";
+    return "FFmpeg WASM v0.12.15 - Client-side processing";
   } catch {
     return "Unknown";
   }

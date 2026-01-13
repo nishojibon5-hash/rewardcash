@@ -35,34 +35,50 @@ export const handleConnectPlatformAdvanced: RequestHandler = async (
   res
 ) => {
   try {
-    const { platform, credentials } = req.body;
+    let platform: string;
+    let credentials: Record<string, any>;
+
+    // Handle both formats:
+    // 1. { platform, credentials: {...} }
+    // 2. { platform, ...credentialFields }
+    if (req.body.credentials && typeof req.body.credentials === "object") {
+      // Format 1
+      platform = req.body.platform;
+      credentials = req.body.credentials;
+    } else {
+      // Format 2 - spread credentials
+      const { platform: p, credentials: c, ...rest } = req.body;
+      platform = p || req.body.platform;
+      credentials = c || rest;
+    }
 
     if (!platform || typeof platform !== "string") {
       return res.status(400).json({ error: "Invalid platform" });
     }
 
-    if (!credentials || typeof credentials !== "object") {
-      return res.status(400).json({ error: "Invalid credentials" });
+    if (!credentials || typeof credentials !== "object" || Object.keys(credentials).length === 0) {
+      return res.status(400).json({ error: "Invalid credentials - please provide required fields" });
     }
 
-    console.log(`Connecting platform: ${platform}`, credentials);
+    console.log(`🔗 Connecting platform: ${platform}`);
+    console.log(`   Credentials: ${Object.keys(credentials).join(", ")}`);
 
     // Validate platform-specific credentials
     const validated = await validatePlatformCredentials(platform, credentials);
     if (!validated) {
       return res.status(400).json({
-        error: `Invalid credentials for ${platform}. Please verify and try again.`,
+        error: `Invalid credentials for ${platform}. Please verify you've provided all required fields.`,
       });
     }
 
-    // Save to Google Sheets
-    const savedCredential = await saveCredential({
+    // Save to Google Sheets and cache
+    const saved = await saveCredential({
       platform,
       ...credentials,
       createdAt: new Date().toISOString(),
     });
 
-    if (!savedCredential) {
+    if (!saved) {
       return res.status(500).json({
         error: "Failed to save credentials. Please try again.",
       });
@@ -73,7 +89,7 @@ export const handleConnectPlatformAdvanced: RequestHandler = async (
     res.json({
       ok: true,
       platform,
-      message: `${platform} connected successfully`,
+      message: `${platform} connected successfully and credentials saved`,
     });
   } catch (error) {
     console.error("Platform connection error:", error);

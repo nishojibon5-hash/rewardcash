@@ -63,9 +63,6 @@ export default function StreamConnections({
         userId: "",
         accessToken: "",
       },
-      drive: {
-        serviceAccount: "",
-      },
     };
     return defaults[platformId] || {};
   }

@@ -252,12 +252,14 @@ export default function Stream() {
     credentials: Record<string, string>
   ) => {
     try {
+      console.log(`🔗 Connecting ${platformId}...`, Object.keys(credentials));
+
       const response = await fetch("/api/stream/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           platform: platformId,
-          ...credentials,
+          credentials: credentials,
         }),
       });
 
@@ -267,13 +269,20 @@ export default function Stream() {
         throw new Error(data.error || "Connection failed");
       }
 
+      console.log(`✅ ${platformId} connected successfully`);
+
       setPlatforms((prev) =>
         prev.map((p) =>
           p.id === platformId
             ? {
                 ...p,
                 connected: true,
-                username: credentials.username || credentials.channelId,
+                username:
+                  credentials.username ||
+                  credentials.channelId ||
+                  credentials.pageId ||
+                  credentials.userId ||
+                  "Connected",
               }
             : p
         )
@@ -281,6 +290,7 @@ export default function Stream() {
 
       setError(null);
     } catch (err) {
+      console.error(`❌ Connection error for ${platformId}:`, err);
       setError(
         err instanceof Error ? err.message : "Failed to connect platform"
       );

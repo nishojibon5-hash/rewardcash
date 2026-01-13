@@ -60,23 +60,33 @@ export default function Stream() {
         // Check client FFmpeg (WASM)
         const clientFFmpegAvailable = isFFmpegAvailable();
 
-        // Auto-load WASM FFmpeg if available
+        // Auto-load WASM FFmpeg if not already loaded
         if (!clientFFmpegAvailable) {
           try {
+            console.log("Loading FFmpeg WASM...");
             const loaded = await loadFFmpeg();
-            setFFmpegStatus(
-              loaded
-                ? "ready-wasm"
-                : serverFFmpegAvailable
-                  ? "ready-server"
-                  : "ready-passthrough"
+            if (loaded) {
+              console.log("✅ FFmpeg WASM loaded successfully");
+              setFFmpegStatus("ready-wasm");
+            } else {
+              console.warn(
+                "⚠️ FFmpeg WASM failed to load. Falling back to server or direct streaming."
+              );
+              setFFmpegStatus(
+                serverFFmpegAvailable ? "ready-server" : "ready-passthrough"
+              );
+            }
+          } catch (ffmpegErr) {
+            console.error(
+              "❌ FFmpeg WASM load error (using fallback):",
+              ffmpegErr
             );
-          } catch {
             setFFmpegStatus(
               serverFFmpegAvailable ? "ready-server" : "ready-passthrough"
             );
           }
         } else {
+          console.log("✅ FFmpeg WASM already loaded");
           setFFmpegStatus("ready-wasm");
         }
 

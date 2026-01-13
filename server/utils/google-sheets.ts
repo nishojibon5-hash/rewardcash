@@ -152,30 +152,47 @@ export async function getCredential(
   platform: string
 ): Promise<StreamingCredential | null> {
   try {
-    // Try Google Sheets first
+    // Check cache first (fastest)
+    const cached = credentialsCache.get(platform);
+    if (cached) {
+      console.log(`✅ Retrieved ${platform} credentials from cache`);
+      return cached;
+    }
+
+    // Try Google Sheets if not in cache
     if (process.env.GOOGLE_SHEETS_ID && process.env.GOOGLE_SHEETS_API_KEY) {
       const result = await callGoogleSheets("Credentials!A:F", "GET");
       if (result?.values) {
         const rows = result.values;
-        const credential = rows.find((row: string[]) => row[0] === platform);
-        if (credential) {
-          return {
-            platform: credential[0],
-            username: credential[1],
-            channelId: credential[2],
-            accessToken: credential[3],
-            rtmpUrl: credential[4],
-            updatedAt: credential[5],
+        const credentialRow = rows.find((row: string[]) => row[0] === platform);
+        if (credentialRow) {
+          const credential: StreamingCredential = {
+            platform: credentialRow[0],
+            username: credentialRow[1],
+            channelId: credentialRow[2],
+            accessToken: credentialRow[3],
+            rtmpUrl: credentialRow[4],
+            updatedAt: credentialRow[5],
           };
+          // Cache it for next time
+          credentialsCache.set(platform, credential);
+          console.log(`✅ Retrieved ${platform} credentials from Google Sheets`);
+          return credential;
         }
       }
     }
 
-    // Fallback to cache
-    return credentialsCache.get(platform) || null;
+    console.warn(`⚠️ No credentials found for ${platform}`);
+    return null;
   } catch (error) {
     console.error("Error retrieving credential:", error);
-    return credentialsCache.get(platform) || null;
+    // Return from cache as fallback
+    const cached = credentialsCache.get(platform);
+    if (cached) {
+      console.log(`⚠️ Using cached credentials for ${platform} due to error`);
+      return cached;
+    }
+    return null;
   }
 }
 

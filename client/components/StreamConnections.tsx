@@ -50,23 +50,21 @@ export default function StreamConnections({
     const defaults: Record<string, Record<string, string>> = {
       youtube: {
         channelId: "",
-        apiKey: "",
-        description: "Enter your YouTube Channel ID and API Key",
+        streamKey: "",
       },
       facebook: {
         pageId: "",
         accessToken: "",
-        description: "Enter your Facebook Page ID and Access Token",
       },
       bilibili: {
-        username: "",
         streamKey: "",
-        description: "Enter your Bilibili username and Stream Key",
+      },
+      instagram: {
+        userId: "",
+        accessToken: "",
       },
       drive: {
-        email: "",
         serviceAccount: "",
-        description: "Enter your Google Account and Service Account JSON",
       },
     };
     return defaults[platformId] || {};
@@ -76,22 +74,39 @@ export default function StreamConnections({
     const labels: Record<string, Record<string, string>> = {
       youtube: {
         channelId: "YouTube Channel ID",
-        apiKey: "YouTube API Key",
+        streamKey: "Stream Key (Get from Creator Studio)",
       },
       facebook: {
         pageId: "Facebook Page ID",
-        accessToken: "Access Token",
+        accessToken: "Access Token (Generate in App Dashboard)",
       },
       bilibili: {
-        username: "Bilibili Username",
-        streamKey: "Stream Key",
+        streamKey: "Bilibili Stream Key (Get from Live Dashboard)",
+      },
+      instagram: {
+        userId: "Instagram User ID",
+        accessToken: "Access Token",
       },
       drive: {
-        email: "Google Account Email",
-        serviceAccount: "Service Account JSON",
+        serviceAccount: "Google Service Account JSON",
       },
     };
     return labels[platformId] || {};
+  }
+
+  function getHelpText(platformId: string): string {
+    const help: Record<string, string> = {
+      youtube:
+        "Get your Stream Key from YouTube Creator Studio → Go Live → Setup → Stream Key",
+      facebook:
+        "Get your Page ID and Access Token from Facebook App Dashboard → Messenger Platform → Settings",
+      bilibili:
+        "Get your Stream Key from Bilibili Live Dashboard → Settings → Streaming",
+      instagram:
+        "Get your User ID and Access Token from Instagram Business Account settings",
+      drive: "Paste your Google Service Account JSON here",
+    };
+    return help[platformId] || "";
   }
 
   const handleFieldChange = (
@@ -114,10 +129,16 @@ export default function StreamConnections({
 
   const handleSubmit = async (platformId: string) => {
     const form = forms[platformId];
-    const credentials = Object.fromEntries(
-      Object.entries(form.fields).filter(([_, v]) => v && !v.includes("Enter"))
-    );
+    
+    // Filter out empty fields
+    const credentials: Record<string, string> = {};
+    for (const [key, value] of Object.entries(form.fields)) {
+      if (value && value.trim() && !value.startsWith("Enter")) {
+        credentials[key] = value.trim();
+      }
+    }
 
+    // Check if all required fields are filled
     if (Object.keys(credentials).length === 0) {
       setForms((prev) => ({
         ...prev,
@@ -134,11 +155,19 @@ export default function StreamConnections({
       [platformId]: {
         ...prev[platformId],
         loading: true,
+        error: undefined,
       },
     }));
 
     try {
+      console.log(`Connecting ${platformId} with credentials:`, Object.keys(credentials));
+      
+      // Call the onConnect handler with platform ID and credentials
       await onConnect(platformId, credentials);
+      
+      console.log(`✅ ${platformId} connected successfully`);
+      
+      // Reset form
       setForms((prev) => ({
         ...prev,
         [platformId]: {
@@ -148,13 +177,14 @@ export default function StreamConnections({
         },
       }));
     } catch (err) {
+      console.error(`❌ Connection error for ${platformId}:`, err);
       setForms((prev) => ({
         ...prev,
         [platformId]: {
           ...prev[platformId],
           loading: false,
           error:
-            err instanceof Error ? err.message : "Connection failed",
+            err instanceof Error ? err.message : "Connection failed. Please try again.",
         },
       }));
     }
@@ -173,10 +203,11 @@ export default function StreamConnections({
 
   const getFieldKeys = (platformId: string): string[] => {
     const keys: Record<string, string[]> = {
-      youtube: ["channelId", "apiKey"],
+      youtube: ["channelId", "streamKey"],
       facebook: ["pageId", "accessToken"],
-      bilibili: ["username", "streamKey"],
-      drive: ["email", "serviceAccount"],
+      bilibili: ["streamKey"],
+      instagram: ["userId", "accessToken"],
+      drive: ["serviceAccount"],
     };
     return keys[platformId] || [];
   };
@@ -187,6 +218,7 @@ export default function StreamConnections({
         const form = forms[platform.id];
         const labels = getFieldLabels(platform.id);
         const fieldKeys = getFieldKeys(platform.id);
+        const helpText = getHelpText(platform.id);
 
         return (
           <div key={platform.id} className="border border-slate-200 rounded-lg p-4">
@@ -199,13 +231,15 @@ export default function StreamConnections({
                   <p className="text-sm text-emerald-600 mt-1">✓ Connected</p>
                 )}
               </div>
-              <Button
-                onClick={() => handleToggleForm(platform.id)}
-                variant={form.isOpen ? "default" : "outline"}
-                size="sm"
-              >
-                {form.isOpen ? "Cancel" : "Configure"}
-              </Button>
+              {!platform.connected && (
+                <Button
+                  onClick={() => handleToggleForm(platform.id)}
+                  variant={form.isOpen ? "default" : "outline"}
+                  size="sm"
+                >
+                  {form.isOpen ? "Cancel" : "Connect"}
+                </Button>
+              )}
             </div>
 
             {form.isOpen && (
@@ -217,13 +251,26 @@ export default function StreamConnections({
                   </Alert>
                 )}
 
+                {helpText && (
+                  <p className="text-sm text-slate-600 bg-blue-50 p-3 rounded border border-blue-200">
+                    💡 {helpText}
+                  </p>
+                )}
+
                 {fieldKeys.map((fieldKey) => (
                   <div key={fieldKey}>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
                       {labels[fieldKey] || fieldKey}
                     </label>
                     <Input
-                      type={fieldKey.includes("token") || fieldKey.includes("Key") || fieldKey.includes("Account") ? "password" : "text"}
+                      type={
+                        fieldKey.includes("token") ||
+                        fieldKey.includes("Key") ||
+                        fieldKey.includes("Account") ||
+                        fieldKey.includes("accessToken")
+                          ? "password"
+                          : "text"
+                      }
                       placeholder={`Enter ${labels[fieldKey] || fieldKey}`}
                       value={form.fields[fieldKey] || ""}
                       onChange={(e) =>

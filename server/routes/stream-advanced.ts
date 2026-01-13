@@ -27,6 +27,136 @@ interface StreamingCredentials {
 // In-memory storage for session credentials
 const sessionCredentials = new Map<string, StreamingCredentials>();
 
+/**
+ * Connect a platform - Save credentials to Google Sheets
+ */
+export const handleConnectPlatformAdvanced: RequestHandler = async (
+  req,
+  res
+) => {
+  try {
+    const { platform, credentials } = req.body;
+
+    if (!platform || typeof platform !== "string") {
+      return res.status(400).json({ error: "Invalid platform" });
+    }
+
+    if (!credentials || typeof credentials !== "object") {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    console.log(`Connecting platform: ${platform}`, credentials);
+
+    // Validate platform-specific credentials
+    const validated = await validatePlatformCredentials(platform, credentials);
+    if (!validated) {
+      return res.status(400).json({
+        error: `Invalid credentials for ${platform}. Please verify and try again.`,
+      });
+    }
+
+    // Save to Google Sheets
+    const savedCredential = await saveCredential({
+      platform,
+      ...credentials,
+      createdAt: new Date().toISOString(),
+    });
+
+    if (!savedCredential) {
+      return res.status(500).json({
+        error: "Failed to save credentials. Please try again.",
+      });
+    }
+
+    console.log(`✅ Platform ${platform} connected successfully`);
+
+    res.json({
+      ok: true,
+      platform,
+      message: `${platform} connected successfully`,
+    });
+  } catch (error) {
+    console.error("Platform connection error:", error);
+    res.status(500).json({
+      error: "Failed to connect platform",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Disconnect a platform - Remove credentials from Google Sheets
+ */
+export const handleDisconnectPlatformAdvanced: RequestHandler = async (
+  req,
+  res
+) => {
+  try {
+    const { platform } = req.body;
+
+    if (!platform || typeof platform !== "string") {
+      return res.status(400).json({ error: "Invalid platform" });
+    }
+
+    // Delete from Google Sheets
+    const deleted = await deleteCredential(platform);
+
+    if (!deleted) {
+      return res.status(500).json({
+        error: "Failed to disconnect platform",
+      });
+    }
+
+    console.log(`✅ Platform ${platform} disconnected`);
+
+    res.json({
+      ok: true,
+      platform,
+      message: `${platform} disconnected successfully`,
+    });
+  } catch (error) {
+    console.error("Platform disconnection error:", error);
+    res.status(500).json({
+      error: "Failed to disconnect platform",
+    });
+  }
+};
+
+/**
+ * Get connected platforms
+ */
+export const handleGetConnectedPlatformsAdvanced: RequestHandler = async (
+  req,
+  res
+) => {
+  try {
+    const credentials = await getAllCredentials();
+
+    const connectedPlatforms = credentials.map((cred: any) => ({
+      platform: cred.platform,
+      connected: true,
+      username: cred.username || cred.email,
+      channelId: cred.channelId,
+      pageId: cred.pageId,
+      createdAt: cred.createdAt,
+    }));
+
+    res.json({
+      ok: true,
+      platforms: connectedPlatforms,
+      count: connectedPlatforms.length,
+    });
+  } catch (error) {
+    console.error("Error fetching connected platforms:", error);
+    res.status(500).json({
+      error: "Failed to fetch connected platforms",
+    });
+  }
+};
+
+/**
+ * Start streaming - Broadcast to all connected platforms
+ */
 export const handleStartStreamAdvanced: RequestHandler = async (req, res) => {
   const { videoUrl, platforms, sessionId } = req.body;
 
@@ -40,6 +170,8 @@ export const handleStartStreamAdvanced: RequestHandler = async (req, res) => {
         .status(400)
         .json({ error: "Please select at least one platform" });
     }
+
+    console.log(`Starting stream to platforms:`, platforms);
 
     // Validate video URL
     const videoInfo = await extractVideoStream(videoUrl);
@@ -59,11 +191,22 @@ export const handleStartStreamAdvanced: RequestHandler = async (req, res) => {
           error: `Platform ${platform} not configured. Please connect first.`,
         });
       }
+
+      // Validate streaming credentials
+      const streamingReady = validateStreamingCredentials(platform, cred);
+      if (!streamingReady) {
+        return res.status(400).json({
+          error: `${platform} credentials invalid. Please reconnect.`,
+        });
+      }
+
       credentials.set(platform, cred);
     }
 
     // Generate stream ID
-    const streamId = `stream_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const streamId = `stream_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     // Store session credentials
     const sessionCreds: StreamingCredentials = {};
@@ -85,7 +228,10 @@ export const handleStartStreamAdvanced: RequestHandler = async (req, res) => {
     const success = await startStream(streamId, videoUrl, platforms, credentials);
 
     if (!success) {
-      return res.status(500).json({ error: "Failed to start stream" });
+      return res.status(500).json({
+        error:
+          "Failed to start stream. Check that FFmpeg is installed and credentials are valid.",
+      });
     }
 
     res.json({
@@ -98,262 +244,138 @@ export const handleStartStreamAdvanced: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error("Stream start error:", error);
     res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to start stream",
+      error: "Failed to start stream",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };
 
+/**
+ * Stop streaming
+ */
 export const handleStopStreamAdvanced: RequestHandler = async (req, res) => {
-  const { streamId } = req.body;
-
   try {
-    if (!streamId || typeof streamId !== "string") {
-      return res.status(400).json({ error: "Invalid or missing streamId" });
+    const { streamId } = req.body;
+
+    if (!streamId) {
+      return res.status(400).json({ error: "Missing streamId" });
     }
 
-    const stream = getStreamStatus(streamId);
-    if (!stream) {
+    const stopped = await stopStream(streamId);
+
+    if (!stopped) {
       return res.status(404).json({ error: "Stream not found" });
-    }
-
-    // Stop the stream
-    const success = await stopStream(streamId);
-
-    if (!success) {
-      return res.status(500).json({ error: "Failed to stop stream" });
     }
 
     // Log stream end
     await logStreamEvent({
       streamId,
-      videoUrl: stream.videoUrl,
-      platforms: stream.platforms.join(","),
+      videoUrl: "N/A",
+      platforms: "N/A",
       status: "stopped",
       endTime: new Date().toISOString(),
     });
 
     res.json({
       ok: true,
+      streamId,
       message: "Stream stopped successfully",
-      duration: Math.floor((Date.now() - stream.startTime) / 1000),
     });
   } catch (error) {
     console.error("Stream stop error:", error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to stop stream",
-    });
+    res.status(500).json({ error: "Failed to stop stream" });
   }
 };
 
-export const handleConnectPlatformAdvanced: RequestHandler = async (
-  req,
-  res
-) => {
-  const { platform, ...credentials } = req.body;
-
-  try {
-    if (!platform || typeof platform !== "string") {
-      return res.status(400).json({ error: "Invalid or missing platform" });
-    }
-
-    // Validate credentials
-    const requiredFields: Record<string, string[]> = {
-      youtube: ["channelId", "apiKey"],
-      facebook: ["pageId", "accessToken"],
-      bilibili: ["username", "streamKey"],
-      twitch: ["streamKey"],
-    };
-
-    const required = requiredFields[platform];
-    if (!required) {
-      return res.status(400).json({ error: `Unsupported platform: ${platform}` });
-    }
-
-    const missing = required.filter((field) => !credentials[field]);
-    if (missing.length > 0) {
-      return res.status(400).json({
-        error: `Missing required fields: ${missing.join(", ")}`,
-      });
-    }
-
-    // Save to Google Sheets
-    const saved = await saveCredential({
-      platform,
-      ...credentials,
-      createdAt: new Date().toISOString(),
-    });
-
-    if (!saved) {
-      return res.status(500).json({
-        error: "Failed to save credentials. Check your Google Sheets setup.",
-      });
-    }
-
-    res.json({
-      ok: true,
-      message: `Successfully connected to ${platform}`,
-      platform,
-    });
-  } catch (error) {
-    console.error("Platform connection error:", error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to connect platform",
-    });
-  }
-};
-
-export const handleDisconnectPlatformAdvanced: RequestHandler = async (
-  req,
-  res
-) => {
-  const { platform } = req.body;
-
-  try {
-    if (!platform || typeof platform !== "string") {
-      return res.status(400).json({ error: "Invalid or missing platform" });
-    }
-
-    const success = await deleteCredential(platform);
-
-    if (!success) {
-      return res.status(404).json({ error: "Platform not connected" });
-    }
-
-    res.json({
-      ok: true,
-      message: `Disconnected from ${platform}`,
-    });
-  } catch (error) {
-    console.error("Platform disconnection error:", error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to disconnect platform",
-    });
-  }
-};
-
+/**
+ * Get stream status
+ */
 export const handleGetStreamStatusAdvanced: RequestHandler = async (
   req,
   res
 ) => {
-  const { streamId } = req.params;
-
   try {
+    const { streamId } = req.params;
+
     if (!streamId) {
-      return res.status(400).json({ error: "Missing streamId parameter" });
+      return res.status(400).json({ error: "Missing streamId" });
     }
 
-    const stream = getStreamStatus(streamId);
-    if (!stream) {
+    const status = await getStreamStatus(streamId);
+
+    if (!status) {
       return res.status(404).json({ error: "Stream not found" });
     }
 
-    const logs = await getStreamLogs(streamId);
-
     res.json({
       ok: true,
-      stream: {
-        ...stream,
-        duration: Math.floor((Date.now() - stream.startTime) / 1000),
-      },
-      logs,
+      streamId,
+      ...status,
     });
   } catch (error) {
-    console.error("Get stream status error:", error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to get stream status",
-    });
+    console.error("Stream status error:", error);
+    res.status(500).json({ error: "Failed to get stream status" });
   }
 };
 
+/**
+ * Get active streams
+ */
 export const handleGetActiveStreamsAdvanced: RequestHandler = async (
   req,
   res
 ) => {
   try {
-    const streams = getActiveStreams().map((stream) => ({
-      ...stream,
-      duration: Math.floor((Date.now() - stream.startTime) / 1000),
-    }));
+    const activeStreams = await getActiveStreams();
 
     res.json({
       ok: true,
-      streams,
-      count: streams.length,
+      streams: activeStreams,
+      count: activeStreams.length,
     });
   } catch (error) {
-    console.error("Get active streams error:", error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to get active streams",
-    });
+    console.error("Active streams error:", error);
+    res.status(500).json({ error: "Failed to get active streams" });
   }
 };
 
-export const handleGetConnectedPlatformsAdvanced: RequestHandler = async (
-  req,
-  res
-) => {
-  try {
-    const credentials = await getAllCredentials();
-    const platforms = credentials.map((c: any) => ({
-      platform: c.platform,
-      username: c.username,
-      channelId: c.channelId,
-      connectedAt: c.updatedAt,
-    }));
-
-    res.json({
-      ok: true,
-      platforms,
-      count: platforms.length,
-    });
-  } catch (error) {
-    console.error("Get connected platforms error:", error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to get connected platforms",
-    });
-  }
-};
-
+/**
+ * Check FFmpeg availability
+ */
 export const handleCheckFFmpeg: RequestHandler = async (req, res) => {
   try {
     const available = await checkFFmpegAvailable();
 
-    if (!available) {
-      return res.json({
-        ok: false,
-        ffmpegAvailable: false,
-        message:
-          "FFmpeg not installed. Install it to enable streaming. For Docker, add: RUN apt-get install ffmpeg",
-      });
-    }
-
     res.json({
       ok: true,
-      ffmpegAvailable: true,
-      message: "FFmpeg is available and ready for streaming",
+      ffmpegAvailable: available,
+      message: available
+        ? "FFmpeg is available on this server"
+        : "FFmpeg is not installed on this server",
     });
   } catch (error) {
-    res.json({
-      ok: false,
-      ffmpegAvailable: false,
-      error: error instanceof Error ? error.message : "Failed to check FFmpeg",
+    res.status(500).json({
+      error: "Failed to check FFmpeg availability",
     });
   }
 };
 
+/**
+ * Extract video from URL
+ */
 export const handleExtractVideo: RequestHandler = async (req, res) => {
-  const { videoUrl } = req.body;
-
   try {
+    const { videoUrl } = req.body;
+
     if (!videoUrl) {
-      return res.status(400).json({ error: "Video URL required" });
+      return res.status(400).json({ error: "Missing videoUrl" });
     }
 
     const videoInfo = await extractVideoStream(videoUrl);
+
     if (!videoInfo) {
       return res.status(400).json({
-        error:
-          "Unable to extract video. Check the URL is valid and from a supported source.",
+        error: "Unable to extract video from URL",
       });
     }
 
@@ -364,7 +386,70 @@ export const handleExtractVideo: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error("Video extraction error:", error);
     res.status(500).json({
-      error: error instanceof Error ? error.message : "Failed to extract video",
+      error: "Failed to extract video",
     });
   }
 };
+
+/**
+ * Validate platform-specific credentials
+ */
+async function validatePlatformCredentials(
+  platform: string,
+  credentials: any
+): Promise<boolean> {
+  try {
+    switch (platform) {
+      case "youtube":
+        // YouTube requires channelId and streamKey
+        return !!(credentials.channelId && (credentials.streamKey || credentials.apiKey));
+
+      case "facebook":
+        // Facebook requires pageId and accessToken
+        return !!(credentials.pageId && credentials.accessToken);
+
+      case "bilibili":
+        // Bilibili requires streamKey
+        return !!credentials.streamKey;
+
+      case "instagram":
+        // Instagram requires userId and accessToken
+        return !!(credentials.userId && credentials.accessToken);
+
+      default:
+        return false;
+    }
+  } catch (error) {
+    console.error(`Validation error for ${platform}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Validate credentials for actual streaming
+ */
+function validateStreamingCredentials(platform: string, credentials: any): boolean {
+  try {
+    switch (platform) {
+      case "youtube":
+        return !!(
+          credentials.streamKey ||
+          (credentials.channelId && credentials.apiKey)
+        );
+
+      case "facebook":
+        return !!(credentials.pageId && credentials.accessToken);
+
+      case "bilibili":
+        return !!credentials.streamKey;
+
+      case "instagram":
+        return !!(credentials.userId && credentials.accessToken);
+
+      default:
+        return false;
+    }
+  } catch (error) {
+    return false;
+  }
+}

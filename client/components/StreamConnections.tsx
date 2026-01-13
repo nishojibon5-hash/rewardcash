@@ -204,7 +204,6 @@ export default function StreamConnections({
       facebook: ["pageId", "accessToken"],
       bilibili: ["streamKey"],
       instagram: ["userId", "accessToken"],
-      drive: ["serviceAccount"],
     };
     return keys[platformId] || [];
   };

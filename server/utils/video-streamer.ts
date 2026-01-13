@@ -1,6 +1,6 @@
 /**
  * Video Streaming Engine - Extracts video from sources and streams to platforms
- * Supports: YouTube, Bilibili, Facebook, Google Drive
+ * Supports: YouTube, Bilibili, Facebook, Instagram
  */
 
 import { ChildProcess, spawn } from "child_process";
@@ -86,10 +86,26 @@ export async function extractVideoStream(
       };
     }
 
+    // Facebook
+    if (hostname.includes("facebook.com")) {
+      return {
+        streamUrl: videoUrl,
+        videoId: videoUrl.split("/").pop() || "video",
+        title: `Facebook Video`,
+      };
+    }
+
+    // Instagram
+    if (hostname.includes("instagram.com")) {
+      return {
+        streamUrl: videoUrl,
+        videoId: videoUrl.split("/").pop() || "video",
+        title: `Instagram Video`,
+      };
+    }
+
     // Direct video file (MP4, WebM, etc.)
-    if (
-      /\.(mp4|webm|m3u8|flv|mkv|avi)$/i.test(videoUrl)
-    ) {
+    if (/\.(mp4|webm|m3u8|flv|mkv|avi)$/i.test(videoUrl)) {
       return {
         streamUrl: videoUrl,
         videoId: videoUrl.split("/").pop() || "video",
@@ -106,7 +122,6 @@ export async function extractVideoStream(
 
 /**
  * Generate RTMP stream keys for various platforms
- * In production, these would come from platform APIs
  */
 export function generateRTMPDestinations(
   platforms: string[],
@@ -116,40 +131,83 @@ export function generateRTMPDestinations(
 
   for (const platform of platforms) {
     const cred = credentials.get(platform);
-    if (!cred) continue;
+    if (!cred) {
+      console.warn(`No credentials found for platform: ${platform}`);
+      continue;
+    }
 
-    switch (platform) {
-      case "youtube":
-        destinations.push({
-          platform: "youtube",
-          rtmpUrl: "rtmps://a.rtmp.youtube.com/live2",
-          streamKey: cred.streamKey || cred.accessToken || "",
-        });
-        break;
+    try {
+      switch (platform) {
+        case "youtube":
+          if (cred.streamKey) {
+            destinations.push({
+              platform: "youtube",
+              rtmpUrl: "rtmps://a.rtmp.youtube.com/live2/",
+              streamKey: cred.streamKey,
+            });
+            console.log(`✅ YouTube RTMP destination added`);
+          } else {
+            console.warn("YouTube streamKey not found");
+          }
+          break;
 
-      case "facebook":
-        destinations.push({
-          platform: "facebook",
-          rtmpUrl: "rtmps://live-api-s.facebook.com:443/rtmp/",
-          streamKey: `${cred.pageId}?access_token=${cred.accessToken}`,
-        });
-        break;
+        case "facebook":
+          if (cred.pageId && cred.accessToken) {
+            destinations.push({
+              platform: "facebook",
+              rtmpUrl: "rtmps://live-api-s.facebook.com:443/rtmp/",
+              streamKey: `${cred.pageId}?access_token=${cred.accessToken}`,
+            });
+            console.log(`✅ Facebook RTMP destination added`);
+          } else {
+            console.warn("Facebook pageId or accessToken not found");
+          }
+          break;
 
-      case "bilibili":
-        destinations.push({
-          platform: "bilibili",
-          rtmpUrl: "rtmp://live-push.bilivideo.com/live-bvc/",
-          streamKey: cred.streamKey || "",
-        });
-        break;
+        case "bilibili":
+          if (cred.streamKey) {
+            destinations.push({
+              platform: "bilibili",
+              rtmpUrl: "rtmp://live-push.bilivideo.com/live-bvc/",
+              streamKey: cred.streamKey,
+            });
+            console.log(`✅ Bilibili RTMP destination added`);
+          } else {
+            console.warn("Bilibili streamKey not found");
+          }
+          break;
 
-      case "twitch":
-        destinations.push({
-          platform: "twitch",
-          rtmpUrl: "rtmps://live-api.twitch.tv/app",
-          streamKey: cred.streamKey || cred.accessToken || "",
-        });
-        break;
+        case "instagram":
+          if (cred.accessToken) {
+            destinations.push({
+              platform: "instagram",
+              rtmpUrl: "rtmps://live-api-s.instagram.com:443/rtmp/",
+              streamKey: cred.accessToken,
+            });
+            console.log(`✅ Instagram RTMP destination added`);
+          } else {
+            console.warn("Instagram accessToken not found");
+          }
+          break;
+
+        case "twitch":
+          if (cred.streamKey) {
+            destinations.push({
+              platform: "twitch",
+              rtmpUrl: "rtmps://live-api.twitch.tv/app/",
+              streamKey: cred.streamKey,
+            });
+            console.log(`✅ Twitch RTMP destination added`);
+          } else {
+            console.warn("Twitch streamKey not found");
+          }
+          break;
+
+        default:
+          console.warn(`Unknown platform: ${platform}`);
+      }
+    } catch (error) {
+      console.error(`Error adding ${platform} destination:`, error);
     }
   }
 
@@ -158,7 +216,6 @@ export function generateRTMPDestinations(
 
 /**
  * Start streaming a video to multiple platforms
- * Uses ffmpeg under the hood (needs to be installed on system)
  */
 export async function startStream(
   streamId: string,
@@ -167,20 +224,23 @@ export async function startStream(
   credentials: Map<string, any>
 ): Promise<boolean> {
   try {
+    console.log(`🎬 Starting stream ${streamId}...`);
+
     // Extract video source
     const videoInfo = await extractVideoStream(videoUrl);
     if (!videoInfo) {
       throw new Error("Unable to extract video stream from provided URL");
     }
 
+    console.log(`📹 Video extracted:`, videoInfo.title);
+
     // Generate RTMP destinations
-    const destinations = generateRTMPDestinations(
-      platforms,
-      credentials
-    );
+    const destinations = generateRTMPDestinations(platforms, credentials);
     if (destinations.length === 0) {
       throw new Error("No valid streaming destinations configured");
     }
+
+    console.log(`🎯 Destination platforms: ${destinations.map((d) => d.platform).join(", ")}`);
 
     // Create session
     const session: StreamSession = {
@@ -195,112 +255,101 @@ export async function startStream(
 
     activeSessions.set(streamId, session);
 
-    // Build FFmpeg command
-    let ffmpegCmd =
-      `ffmpeg -i "${videoInfo.streamUrl}" -c:v libx264 -preset veryfast ` +
-      `-b:v 4500k -maxrate 4500k -bufsize 9000k -c:a aac -b:a 128k ` +
-      `-f flv`;
+    // Build FFmpeg command with multiple outputs
+    const ffmpegArgs: string[] = ["-i", videoInfo.streamUrl];
 
-    // Add RTMP outputs
-    for (const dest of destinations) {
+    // Add re-streaming to each RTMP destination
+    for (let i = 0; i < destinations.length; i++) {
+      const dest = destinations[i];
       const rtmpUrl = `${dest.rtmpUrl}${dest.streamKey}`;
-      ffmpegCmd += ` "${rtmpUrl}"`;
+
+      // Video codec settings
+      ffmpegArgs.push("-c:v", "libx264");
+      ffmpegArgs.push("-preset", "veryfast");
+      ffmpegArgs.push("-b:v", "4500k");
+      ffmpegArgs.push("-maxrate", "4500k");
+      ffmpegArgs.push("-bufsize", "9000k");
+
+      // Audio codec settings
+      ffmpegArgs.push("-c:a", "aac");
+      ffmpegArgs.push("-b:a", "128k");
+
+      // Format and output
+      ffmpegArgs.push("-f", "flv");
+      ffmpegArgs.push(rtmpUrl);
+
+      console.log(`✅ Added output: ${dest.platform} → ${dest.rtmpUrl}...`);
     }
 
-    console.log(`Starting stream ${streamId} with command:`, ffmpegCmd);
+    console.log(`Running FFmpeg with ${destinations.length} output(s)`);
 
     // Spawn FFmpeg process
-    const proc = spawn("ffmpeg", [
-      "-i",
-      videoInfo.streamUrl,
-      "-c:v",
-      "libx264",
-      "-preset",
-      "veryfast",
-      "-b:v",
-      "4500k",
-      "-maxrate",
-      "4500k",
-      "-bufsize",
-      "9000k",
-      "-c:a",
-      "aac",
-      "-b:a",
-      "128k",
-      "-f",
-      "flv",
-      ...destinations.flatMap((d) => [
-        "-f",
-        "flv",
-        `${d.rtmpUrl}${d.streamKey}`,
-      ]),
-    ]);
+    const proc = spawn("ffmpeg", ffmpegArgs, {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    if (!proc) {
+      throw new Error("Failed to spawn FFmpeg process");
+    }
 
     session.process = proc;
     session.status = "active";
 
+    let isError = false;
+
     // Handle process errors
     proc.stderr?.on("data", (data) => {
       const message = data.toString();
-      console.log(`FFmpeg ${streamId}:`, message);
+      console.log(`[FFmpeg ${streamId}]`, message.trim());
 
-      if (message.includes("error") || message.includes("Error")) {
+      if (message.toLowerCase().includes("error") && !isError) {
+        isError = true;
         session.status = "error";
         session.error = message;
       }
     });
 
-    proc.on("close", (code) => {
-      session.status = "stopped";
-      console.log(`Stream ${streamId} ended with code ${code}`);
-    });
-
     proc.on("error", (error) => {
+      console.error(`FFmpeg process error for ${streamId}:`, error);
       session.status = "error";
       session.error = error.message;
-      console.error(`Stream ${streamId} error:`, error);
+      isError = true;
     });
 
+    proc.on("close", (code) => {
+      console.log(`FFmpeg process ${streamId} closed with code ${code}`);
+      session.status = code === 0 ? "stopped" : "error";
+      activeSessions.delete(streamId);
+    });
+
+    console.log(`✅ Stream ${streamId} started successfully`);
     return true;
   } catch (error) {
-    const session = activeSessions.get(streamId);
-    if (session) {
-      session.status = "error";
-      session.error =
-        error instanceof Error ? error.message : "Unknown error";
-    }
     console.error(`Failed to start stream ${streamId}:`, error);
     return false;
   }
 }
 
 /**
- * Stop an active stream
+ * Stop streaming
  */
 export async function stopStream(streamId: string): Promise<boolean> {
   try {
     const session = activeSessions.get(streamId);
-    if (!session || !session.process) {
+    if (!session) {
       return false;
     }
 
-    session.status = "stopping";
-
-    // Send SIGTERM to FFmpeg process
     if (session.process && !session.process.killed) {
-      session.process.kill("SIGTERM");
-
-      // Wait a bit, then force kill if necessary
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      if (session.process && !session.process.killed) {
-        session.process.kill("SIGKILL");
-      }
+      session.process.kill("SIGINT");
+      session.status = "stopping";
+      console.log(`Stopping stream ${streamId}`);
+      return true;
     }
 
-    session.status = "stopped";
-    return true;
+    return false;
   } catch (error) {
-    console.error(`Failed to stop stream ${streamId}:`, error);
+    console.error("Error stopping stream:", error);
     return false;
   }
 }
@@ -308,19 +357,35 @@ export async function stopStream(streamId: string): Promise<boolean> {
 /**
  * Get stream status
  */
-export function getStreamStatus(
+export async function getStreamStatus(
   streamId: string
-): StreamSession | null {
-  return activeSessions.get(streamId) || null;
+): Promise<Partial<StreamSession> | null> {
+  const session = activeSessions.get(streamId);
+  if (!session) return null;
+
+  return {
+    id: session.id,
+    status: session.status,
+    platforms: session.platforms,
+    bitrate: session.bitrate,
+    resolution: session.resolution,
+    startTime: session.startTime,
+    error: session.error,
+  };
 }
 
 /**
  * Get all active streams
  */
-export function getActiveStreams(): StreamSession[] {
-  return Array.from(activeSessions.values()).filter(
-    (s) => s.status === "active"
-  );
+export async function getActiveStreams(): Promise<Array<Partial<StreamSession>>> {
+  const streams = Array.from(activeSessions.values()).map((session) => ({
+    id: session.id,
+    status: session.status,
+    platforms: session.platforms,
+    startTime: session.startTime,
+  }));
+
+  return streams;
 }
 
 /**
@@ -328,8 +393,28 @@ export function getActiveStreams(): StreamSession[] {
  */
 export async function checkFFmpegAvailable(): Promise<boolean> {
   return new Promise((resolve) => {
-    const proc = spawn("ffmpeg", ["-version"]);
-    proc.on("error", () => resolve(false));
-    proc.on("close", (code) => resolve(code === 0));
+    try {
+      const proc = spawn("ffmpeg", ["-version"], {
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+
+      proc.on("close", (code) => {
+        resolve(code === 0);
+      });
+
+      proc.on("error", () => {
+        resolve(false);
+      });
+
+      // Timeout after 5 seconds
+      setTimeout(() => {
+        if (!proc.killed) {
+          proc.kill();
+        }
+        resolve(false);
+      }, 5000);
+    } catch (error) {
+      resolve(false);
+    }
   });
 }

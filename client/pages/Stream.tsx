@@ -50,10 +50,37 @@ export default function Stream() {
   const [streamingMethod, setStreamingMethod] = useState<string>("detecting");
   const [ffmpegStatus, setFFmpegStatus] = useState<string>("checking");
 
-  // Detect streaming method on mount
+  // Load connected platforms and detect streaming method on mount
   useEffect(() => {
-    const detectMethod = async () => {
+    const initializeApp = async () => {
       try {
+        // Load connected platforms from backend
+        console.log("Loading connected platforms...");
+        const platformsResponse = await fetch("/api/stream/platforms/connected");
+        if (platformsResponse.ok) {
+          const platformsData = await platformsResponse.json();
+          if (platformsData.platforms && Array.isArray(platformsData.platforms)) {
+            console.log(`✅ Loaded ${platformsData.platforms.length} connected platform(s)`);
+            setPlatforms((prev) =>
+              prev.map((p) => {
+                const connected = platformsData.platforms.find(
+                  (cp: any) => cp.platform === p.id
+                );
+                if (connected) {
+                  return {
+                    ...p,
+                    connected: true,
+                    username: connected.username,
+                    channelId: connected.channelId,
+                    pageId: connected.pageId,
+                  };
+                }
+                return p;
+              })
+            );
+          }
+        }
+
         // Check server FFmpeg
         const serverFFmpegAvailable = await checkFFmpegAvailable();
 
@@ -94,13 +121,13 @@ export default function Stream() {
         const method = detectStreamingMethod(false, serverFFmpegAvailable);
         setStreamingMethod(method.name);
       } catch (err) {
-        console.error("Error detecting streaming method:", err);
+        console.error("Error initializing app:", err);
         setStreamingMethod("Direct Stream (Fallback)");
         setFFmpegStatus("ready-passthrough");
       }
     };
 
-    detectMethod();
+    initializeApp();
   }, []);
 
   const [platforms, setPlatforms] = useState<Platform[]>([

@@ -107,7 +107,7 @@ export default function Stream() {
     { id: "youtube", name: "YouTube", icon: "▶️", connected: false },
     { id: "facebook", name: "Facebook", icon: "f", connected: false },
     { id: "bilibili", name: "Bilibili", icon: "哔", connected: false },
-    { id: "drive", name: "Google Drive", icon: "☁️", connected: false },
+    { id: "instagram", name: "Instagram", icon: "📷", connected: false },
   ]);
 
   const validateUrl = (url: string): boolean => {

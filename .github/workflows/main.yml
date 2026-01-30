@@ -8,23 +8,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          
+
       - name: Install pnpm
         run: npm install -g pnpm
-        
+
       - name: Install Dependencies
-        run: pnpm install
-        
+        # এখানে --no-frozen-lockfile ব্যবহার করা হয়েছে যাতে নতুন প্যাকেজগুলো অটো-আপডেট হয়
+        run: pnpm install --no-frozen-lockfile
+
       - name: Build Client
         run: pnpm run build:client
 
       - name: Setup Android Platform
         run: |
-          # যদি এন্ড্রয়েড ফোল্ডার না থাকে তবেই অ্যাড করবে, নয়তো শুধু সিঙ্ক করবে
+          # pnpm exec ব্যবহার করে সরাসরি capacitor রান করা হচ্ছে
           if [ ! -d "android" ]; then
             pnpm exec cap add android
           fi
